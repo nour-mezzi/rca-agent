@@ -1,0 +1,83 @@
+
+=INFO REPORT==== 6-Apr-2026::08:31:14 ===
+Starting RabbitMQ 3.6.8 on Erlang 19.3
+Copyright (C) 2007-2016 Pivotal Software, Inc.
+Licensed under the MPL.  See http://www.rabbitmq.com/
+
+              RabbitMQ 3.6.8. Copyright (C) 2007-2016 Pivotal Software, Inc.
+  ##  ##      Licensed under the MPL.  See http://www.rabbitmq.com/
+  ##  ##
+  ##########  Logs: tty
+  ######  ##        tty
+  ##########
+              Starting broker...
+
+=INFO REPORT==== 6-Apr-2026::08:31:14 ===
+node           : rabbit@rabbitmq
+home dir       : /var/lib/rabbitmq
+config file(s) : /etc/rabbitmq/rabbitmq.config
+cookie hash    : eFcrisUi04zBP7FaRSdOGQ==
+log            : tty
+sasl log       : tty
+database dir   : /var/lib/rabbitmq/mnesia/rabbit@rabbitmq
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Memory limit set to 4729MB of 11824MB total.
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Disk free limit set to 50MB
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Limiting to approx 924 file handles (829 sockets)
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+FHC read buffering:  OFF
+FHC write buffering: ON
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Waiting for Mnesia tables for 30000 ms, 9 retries left
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Waiting for Mnesia tables for 30000 ms, 9 retries left
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Priority queues enabled, real BQ is rabbit_variable_queue
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Starting rabbit_node_monitor
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+msg_store_transient: using rabbit_msg_store_ets_index to provide index
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+msg_store_persistent: using rabbit_msg_store_ets_index to provide index
+
+=WARNING REPORT==== 6-Apr-2026::08:31:15 ===
+msg_store_persistent: rebuilding indices from scratch
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+started TCP Listener on [::]:5672
+ completed with 0 plugins.
+
+=INFO REPORT==== 6-Apr-2026::08:31:15 ===
+Server startup complete; 0 plugins started.
+
+=INFO REPORT==== 6-Apr-2026::08:31:32 ===
+accepting AMQP connection <0.313.0> (172.18.0.3:39844 -> 172.18.0.8:5672)
+
+=INFO REPORT==== 6-Apr-2026::08:31:32 ===
+connection <0.313.0> (172.18.0.3:39844 -> 172.18.0.8:5672): user 'guest' authenticated and granted access to vhost '/'
+
+=WARNING REPORT==== 6-Apr-2026::08:45:15 ===
+closing AMQP connection <0.313.0> (172.18.0.3:39844 -> 172.18.0.8:5672):
+client unexpectedly closed TCP connection
+
+=INFO REPORT==== 6-Apr-2026::09:49:39 ===
+accepting AMQP connection <0.401.0> (172.18.0.4:34910 -> 172.18.0.8:5672)
+
+=INFO REPORT==== 6-Apr-2026::09:49:40 ===
+connection <0.401.0> (172.18.0.4:34910 -> 172.18.0.8:5672): user 'guest' authenticated and granted access to vhost '/'
+
+=WARNING REPORT==== 6-Apr-2026::09:55:31 ===
+closing AMQP connection <0.401.0> (172.18.0.4:34910 -> 172.18.0.8:5672):
+client unexpectedly closed TCP connection
