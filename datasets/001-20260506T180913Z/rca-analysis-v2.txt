@@ -1,0 +1,107 @@
+### **Root Cause Analysis (RCA) for Anomaly ID: 001**
+
+---
+
+## **1. Affected Services**
+
+| **Service**       | **Anomaly Type**                          | **Evidence**                                                                 |
+|-------------------|-------------------------------------------|------------------------------------------------------------------------------|
+| **frontend**      | - **HTTP 404 spike** (3× avg)             | `job=frontend, status_code=404: max=0.87133 (peak at 19:13:13)` ***SPIKE*** |
+|                   | - **HTTP 500 errors**                     | `job=frontend, status_code=500: max=0.80431 (peak at 19:15:28)`             |
+|                   | - **MemoryStore warning**                 | `[WARN] Warning: connect.session() MemoryStore is not`                      |
+| **catalogue**     | - **High response latency** (3× avg)      | `job=catalogue: max=0.13941s (peak at 19:10:43)` ***SPIKE***                |
+| **orders**        | - **CPU spike** (3× avg)                  | `container_cpu: max=0.02463 (peak at 19:06:13)` ***SPIKE***                 |
+|                   | - **No HTTP 2xx health checks**           | `java_http_2xx_health: min=0.0, avg=0.0, max=0.0`                           |
+|                   | - **No HTTP requests**                    | `http_requests_rate: min=0.0, avg=0.0, max=0.0`                             |
+|                   | - **No response time data**               | `http_response_times: NO DATA — all 254 points are NaN/missing`             |
+| **shipping**      | - **No HTTP 2xx health checks**           | `java_http_2xx_health: min=0.0, avg=0.0, max=0.0`                           |
+|                   | - **No HTTP requests**                    | `http_requests_rate: min=0.0, avg=0.0, max=0.0`                             |
+|                   | - **No response time data**               | `http_response_times: NO DATA — all 142 points are NaN/missing`             |
+| **tempo**         | - **CPU spike** (3× avg)                  | `container_cpu: max=0.02487 (peak at 19:24:58)` ***SPIKE***                 |
+
+---
+
+## **2. Root Cause**
+The **frontend service is failing to route requests properly**, leading to:
+- **404 errors** (missing resources, likely due to misconfigured session storage).
+- **500 errors** (backend service failures, possibly due to unavailable dependencies).
+- **MemoryStore warning** (session storage misconfiguration, causing session loss).
+
+This cascades into:
+- **Catalogue service latency spike** (likely due to retries from frontend).
+- **Orders & Shipping services being unreachable** (no HTTP traffic, no health checks).
+- **Tempo CPU spike** (increased tracing load due to failed requests).
+
+**Primary Root Cause:**
+The **frontend service is misconfigured** (session storage in `MemoryStore` is not persistent), causing:
+1. **Session loss** → **404s** (users lose session state).
+2. **Failed backend calls** → **500s** (orders/shipping services are unreachable).
+3. **Retry storms** → **catalogue latency spike**.
+
+---
+
+## **3. Evidence**
+
+### **Frontend Issues**
+- **Logs:**
+  - `[WARN] Warning: connect.session() MemoryStore is not` (repeated, not a one-time init log).
+- **Metrics:**
+  - `job=frontend, status_code=404: max=0.87133 (19:13:13)` ***SPIKE*** (3× avg).
+  - `job=frontend, status_code=500: max=0.80431 (19:15:28)` (correlates with backend failures).
+  - `http_response_times (frontend): max=0.04892s (19:13:58)` (higher than avg=0.02253s).
+
+### **Backend Failures (Orders & Shipping)**
+- **Metrics:**
+  - `job=orders, status_code=200: min=0.0, avg=0.0, max=0.0` (no traffic).
+  - `job=shipping, status_code=200: min=0.0, avg=0.0, max=0.0` (no traffic).
+  - `java_http_2xx_health (orders & shipping): min=0.0, avg=0.0, max=0.0` (health checks failing).
+  - `http_response_times (orders & shipping): NO DATA` (services not responding).
+
+### **Catalogue Latency Spike**
+- **Metrics:**
+  - `job=catalogue: max=0.13941s (19:10:43)` ***SPIKE*** (3× avg=0.03172s).
+  - Likely due to **retry storms** from frontend failures.
+
+### **Tempo CPU Spike**
+- **Metrics:**
+  - `container_cpu (tempo): max=0.02487 (19:24:58)` ***SPIKE*** (3× avg=0.00716).
+  - **Traces:**
+    - `carts: max=143ms` (high latency, possibly due to retries).
+    - `orders: max=21ms` (unusual for a service with no HTTP traffic).
+
+---
+
+## **4. Impact**
+- **End-users experience:**
+  - **404 errors** (session loss, broken UI flows).
+  - **500 errors** (failed checkouts, order submissions).
+  - **Slow catalogue browsing** (high latency).
+- **Business impact:**
+  - **Lost revenue** (failed orders).
+  - **Poor user experience** (session drops, errors).
+
+---
+
+## **5. Suggested Fix**
+
+### **Immediate Actions**
+1. **Fix frontend session storage:**
+   - Replace `MemoryStore` with a **persistent session store** (e.g., Redis, database-backed).
+   - Validate session persistence under load.
+2. **Check backend service availability:**
+   - Verify **orders** and **shipping** services are running (`up` metric is `1.0`, but no traffic).
+   - Check **network policies** (are frontend → backend calls blocked?).
+3. **Temporarily reduce tracing load:**
+   - Lower Tempo sampling rate if CPU spikes persist.
+
+### **Long-Term Fixes**
+1. **Add circuit breakers** in frontend to prevent retry storms.
+2. **Implement proper health checks** for orders/shipping (currently `java_http_2xx_health=0`).
+3. **Monitor session storage** (alert on `MemoryStore` warnings).
+4. **Load test** the system to validate fixes.
+
+---
+
+### **Summary**
+**Root Cause:** Frontend session misconfiguration (`MemoryStore`) → session loss → 404s → failed backend calls → 500s → retry storms → catalogue latency.
+**Fix:** Replace `MemoryStore`, validate backend availability, add circuit breakers.

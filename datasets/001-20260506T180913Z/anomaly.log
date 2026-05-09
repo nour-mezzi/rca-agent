@@ -1,0 +1,171 @@
+================================================================================
+Sock Shop Anomaly Test: 001
+================================================================================
+Timestamp: 2026-05-06T18:09:13Z
+Duration: 600s | Users: 100 | Ramp-up: 60s
+================================================================================
+[0;34m[INFO][0m Starting anomaly test: 001
+[1;33m[!][0m Task script not found for 001, using generic execution
+[0;34m[INFO][0m Pre-test setup complete. Running anomaly test...
+[0;34m[INFO][0m Executing JMeter test
+[0;34m[INFO][0m Command: jmeter -n -t /home/user/microservices-demo/test/jmeter/sock-shop-realistic-user-journey.jmx -Jusers=100 -Jrampup=60 -Jduration=600 -l /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/jmeter-results.csv
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+WARN StatusConsoleListener The use of package scanning to locate plugins is deprecated and will be removed in a future release
+Creating summariser <summary>
+Created the tree successfully using /home/user/microservices-demo/test/jmeter/sock-shop-realistic-user-journey.jmx
+Starting standalone test @ 2026 May 6 19:09:16 WAT (1778090956096)
+Waiting for possible Shutdown/StopTestNow/HeapDump/ThreadDump message on port 4445
+summary +     12 in 00:00:48 =    0.3/s Avg:     7 Min:     3 Max:    39 Err:     0 (0.00%) Active: 40 Started: 40 Finished: 0
+summary +     28 in 00:00:26 =    1.1/s Avg:    11 Min:     3 Max:   155 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =     40 in 00:01:14 =    0.5/s Avg:    10 Min:     3 Max:   155 Err:     0 (0.00%)
+summary +     43 in 00:00:31 =    1.4/s Avg:     7 Min:     3 Max:    14 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =     83 in 00:01:45 =    0.8/s Avg:     8 Min:     3 Max:   155 Err:     0 (0.00%)
+summary +     43 in 00:00:29 =    1.5/s Avg:    15 Min:     7 Max:   166 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    126 in 00:02:14 =    0.9/s Avg:    11 Min:     3 Max:   166 Err:     0 (0.00%)
+summary +     49 in 00:00:31 =    1.6/s Avg:    20 Min:     7 Max:    73 Err:     1 (2.04%) Active: 50 Started: 50 Finished: 0
+summary =    175 in 00:02:44 =    1.1/s Avg:    13 Min:     3 Max:   166 Err:     1 (0.57%)
+summary +     44 in 00:00:29 =    1.5/s Avg:    17 Min:     3 Max:    67 Err:    19 (43.18%) Active: 50 Started: 50 Finished: 0
+summary =    219 in 00:03:14 =    1.1/s Avg:    14 Min:     3 Max:   166 Err:    20 (9.13%)
+summary +     38 in 00:00:31 =    1.2/s Avg:    18 Min:     3 Max:   169 Err:    23 (60.53%) Active: 50 Started: 50 Finished: 0
+summary =    257 in 00:03:44 =    1.1/s Avg:    15 Min:     3 Max:   169 Err:    43 (16.73%)
+summary +     44 in 00:00:29 =    1.5/s Avg:    27 Min:     4 Max:    63 Err:     7 (15.91%) Active: 50 Started: 50 Finished: 0
+summary =    301 in 00:04:14 =    1.2/s Avg:    16 Min:     3 Max:   169 Err:    50 (16.61%)
+summary +     42 in 00:00:30 =    1.4/s Avg:    23 Min:     4 Max:    60 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    343 in 00:04:44 =    1.2/s Avg:    17 Min:     3 Max:   169 Err:    50 (14.58%)
+summary +     47 in 00:00:31 =    1.5/s Avg:    14 Min:     3 Max:    49 Err:     8 (17.02%) Active: 50 Started: 50 Finished: 0
+summary =    390 in 00:05:15 =    1.2/s Avg:    17 Min:     3 Max:   169 Err:    58 (14.87%)
+summary +     43 in 00:00:31 =    1.4/s Avg:     8 Min:     4 Max:    14 Err:    20 (46.51%) Active: 50 Started: 50 Finished: 0
+summary =    433 in 00:05:46 =    1.3/s Avg:    16 Min:     3 Max:   169 Err:    78 (18.01%)
+summary +     43 in 00:00:28 =    1.5/s Avg:    12 Min:     3 Max:    53 Err:    22 (51.16%) Active: 50 Started: 50 Finished: 0
+summary =    476 in 00:06:14 =    1.3/s Avg:    16 Min:     3 Max:   169 Err:   100 (21.01%)
+summary +     44 in 00:00:30 =    1.5/s Avg:     6 Min:     3 Max:    16 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    520 in 00:06:44 =    1.3/s Avg:    15 Min:     3 Max:   169 Err:   100 (19.23%)
+summary +     46 in 00:00:30 =    1.5/s Avg:     8 Min:     5 Max:    28 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    566 in 00:07:14 =    1.3/s Avg:    14 Min:     3 Max:   169 Err:   100 (17.67%)
+summary +     41 in 00:00:32 =    1.3/s Avg:    12 Min:     5 Max:    35 Err:     1 (2.44%) Active: 50 Started: 50 Finished: 0
+summary =    607 in 00:07:46 =    1.3/s Avg:    14 Min:     3 Max:   169 Err:   101 (16.64%)
+summary +     40 in 00:00:29 =    1.4/s Avg:    14 Min:     4 Max:    52 Err:     9 (22.50%) Active: 50 Started: 50 Finished: 0
+summary =    647 in 00:08:14 =    1.3/s Avg:    14 Min:     3 Max:   169 Err:   110 (17.00%)
+summary +     45 in 00:00:31 =    1.4/s Avg:    13 Min:     4 Max:    47 Err:    23 (51.11%) Active: 50 Started: 50 Finished: 0
+summary =    692 in 00:08:46 =    1.3/s Avg:    14 Min:     3 Max:   169 Err:   133 (19.22%)
+summary +     44 in 00:00:29 =    1.5/s Avg:    19 Min:     3 Max:    50 Err:    17 (38.64%) Active: 50 Started: 50 Finished: 0
+summary =    736 in 00:09:14 =    1.3/s Avg:    14 Min:     3 Max:   169 Err:   150 (20.38%)
+summary +     41 in 00:00:30 =    1.4/s Avg:    23 Min:     4 Max:    48 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    777 in 00:09:44 =    1.3/s Avg:    15 Min:     3 Max:   169 Err:   150 (19.31%)
+summary +     43 in 00:00:30 =    1.5/s Avg:    15 Min:     2 Max:    52 Err:     1 (2.33%) Active: 50 Started: 50 Finished: 0
+summary =    820 in 00:10:14 =    1.3/s Avg:    15 Min:     2 Max:   169 Err:   151 (18.41%)
+summary +     44 in 00:00:31 =    1.4/s Avg:     7 Min:     2 Max:    22 Err:    18 (40.91%) Active: 50 Started: 50 Finished: 0
+summary =    864 in 00:10:45 =    1.3/s Avg:    14 Min:     2 Max:   169 Err:   169 (19.56%)
+summary +     45 in 00:00:29 =    1.5/s Avg:     8 Min:     2 Max:    53 Err:    23 (51.11%) Active: 50 Started: 50 Finished: 0
+summary =    909 in 00:11:14 =    1.3/s Avg:    14 Min:     2 Max:   169 Err:   192 (21.12%)
+summary +     41 in 00:00:30 =    1.4/s Avg:     6 Min:     3 Max:    15 Err:     8 (19.51%) Active: 50 Started: 50 Finished: 0
+summary =    950 in 00:11:44 =    1.3/s Avg:    14 Min:     2 Max:   169 Err:   200 (21.05%)
+summary +     41 in 00:00:30 =    1.4/s Avg:     7 Min:     2 Max:    50 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =    991 in 00:12:14 =    1.3/s Avg:    13 Min:     2 Max:   169 Err:   200 (20.18%)
+summary +     41 in 00:00:29 =    1.4/s Avg:    12 Min:     6 Max:    49 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1032 in 00:12:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   200 (19.38%)
+summary +     46 in 00:00:30 =    1.5/s Avg:    16 Min:     4 Max:    49 Err:     3 (6.52%) Active: 50 Started: 50 Finished: 0
+summary =   1078 in 00:13:14 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   203 (18.83%)
+summary +     42 in 00:00:31 =    1.3/s Avg:    15 Min:     3 Max:    67 Err:    21 (50.00%) Active: 50 Started: 50 Finished: 0
+summary =   1120 in 00:13:45 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   224 (20.00%)
+summary +     47 in 00:00:29 =    1.6/s Avg:    15 Min:     3 Max:    47 Err:    21 (44.68%) Active: 50 Started: 50 Finished: 0
+summary =   1167 in 00:14:14 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   245 (20.99%)
+summary +     42 in 00:00:30 =    1.4/s Avg:    20 Min:     3 Max:    29 Err:     5 (11.90%) Active: 50 Started: 50 Finished: 0
+summary =   1209 in 00:14:44 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   250 (20.68%)
+summary +     45 in 00:00:30 =    1.5/s Avg:    15 Min:     4 Max:    40 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1254 in 00:15:14 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   250 (19.94%)
+summary +     38 in 00:00:30 =    1.3/s Avg:    12 Min:     3 Max:    51 Err:    10 (26.32%) Active: 50 Started: 50 Finished: 0
+summary =   1292 in 00:15:44 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   260 (20.12%)
+summary +     47 in 00:00:31 =    1.5/s Avg:     8 Min:     3 Max:    54 Err:    20 (42.55%) Active: 50 Started: 50 Finished: 0
+summary =   1339 in 00:16:15 =    1.4/s Avg:    14 Min:     2 Max:   169 Err:   280 (20.91%)
+summary +     41 in 00:00:29 =    1.4/s Avg:     8 Min:     3 Max:    51 Err:    19 (46.34%) Active: 50 Started: 50 Finished: 0
+summary =   1380 in 00:16:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   299 (21.67%)
+summary +     42 in 00:00:30 =    1.4/s Avg:     7 Min:     4 Max:    49 Err:     1 (2.38%) Active: 50 Started: 50 Finished: 0
+summary =   1422 in 00:17:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   300 (21.10%)
+summary +     44 in 00:00:29 =    1.5/s Avg:    11 Min:     4 Max:    49 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1466 in 00:17:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   300 (20.46%)
+summary +     43 in 00:00:31 =    1.4/s Avg:    14 Min:     4 Max:    56 Err:     1 (2.33%) Active: 50 Started: 50 Finished: 0
+summary =   1509 in 00:18:14 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   301 (19.95%)
+summary +     46 in 00:00:31 =    1.5/s Avg:    11 Min:     3 Max:    28 Err:    15 (32.61%) Active: 50 Started: 50 Finished: 0
+summary =   1555 in 00:18:46 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   316 (20.32%)
+summary +     40 in 00:00:29 =    1.4/s Avg:    14 Min:     3 Max:    50 Err:    16 (40.00%) Active: 50 Started: 50 Finished: 0
+summary =   1595 in 00:19:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   332 (20.82%)
+summary +     45 in 00:00:29 =    1.5/s Avg:    16 Min:     3 Max:    50 Err:    16 (35.56%) Active: 50 Started: 50 Finished: 0
+summary =   1640 in 00:19:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   348 (21.22%)
+summary +     41 in 00:00:30 =    1.4/s Avg:    17 Min:     3 Max:    42 Err:     2 (4.88%) Active: 50 Started: 50 Finished: 0
+summary =   1681 in 00:20:14 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   350 (20.82%)
+summary +     47 in 00:00:33 =    1.4/s Avg:    12 Min:     2 Max:    26 Err:     6 (12.77%) Active: 50 Started: 50 Finished: 0
+summary =   1728 in 00:20:47 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   356 (20.60%)
+summary +     38 in 00:00:28 =    1.4/s Avg:     9 Min:     2 Max:    52 Err:    14 (36.84%) Active: 50 Started: 50 Finished: 0
+summary =   1766 in 00:21:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   370 (20.95%)
+summary +     41 in 00:00:30 =    1.4/s Avg:     8 Min:     3 Max:    58 Err:    19 (46.34%) Active: 50 Started: 50 Finished: 0
+summary =   1807 in 00:21:45 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   389 (21.53%)
+summary +     44 in 00:00:30 =    1.5/s Avg:     9 Min:     3 Max:    58 Err:    11 (25.00%) Active: 50 Started: 50 Finished: 0
+summary =   1851 in 00:22:14 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   400 (21.61%)
+summary +     46 in 00:00:29 =    1.6/s Avg:     7 Min:     3 Max:    58 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1897 in 00:22:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   400 (21.09%)
+summary +     44 in 00:00:31 =    1.4/s Avg:    12 Min:     3 Max:    58 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+summary =   1941 in 00:23:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   400 (20.61%)
+summary +     44 in 00:00:30 =    1.5/s Avg:    13 Min:     3 Max:    55 Err:     7 (15.91%) Active: 50 Started: 50 Finished: 0
+summary =   1985 in 00:23:45 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   407 (20.50%)
+summary +     38 in 00:00:30 =    1.3/s Avg:    15 Min:     3 Max:    60 Err:    15 (39.47%) Active: 50 Started: 50 Finished: 0
+summary =   2023 in 00:24:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   422 (20.86%)
+summary +     41 in 00:00:29 =    1.4/s Avg:    14 Min:     3 Max:    61 Err:    18 (43.90%) Active: 50 Started: 50 Finished: 0
+summary =   2064 in 00:24:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   440 (21.32%)
+summary +     46 in 00:00:30 =    1.5/s Avg:    16 Min:     3 Max:    45 Err:    10 (21.74%) Active: 50 Started: 50 Finished: 0
+summary =   2110 in 00:25:14 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   450 (21.33%)
+summary +     42 in 00:00:29 =    1.4/s Avg:    18 Min:     4 Max:    57 Err:     2 (4.76%) Active: 49 Started: 50 Finished: 1
+summary =   2152 in 00:25:44 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   452 (21.00%)
+summary +     46 in 00:00:31 =    1.5/s Avg:    12 Min:     3 Max:    54 Err:    11 (23.91%) Active: 37 Started: 50 Finished: 13
+summary =   2198 in 00:26:15 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   463 (21.06%)
+summary +     33 in 00:00:30 =    1.1/s Avg:     8 Min:     3 Max:    24 Err:    20 (60.61%) Active: 18 Started: 50 Finished: 32
+summary =   2231 in 00:26:45 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   483 (21.65%)
+summary +     14 in 00:00:32 =    0.4/s Avg:    10 Min:     4 Max:    23 Err:    12 (85.71%) Active: 6 Started: 50 Finished: 44
+summary =   2245 in 00:27:17 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   495 (22.05%)
+summary +      5 in 00:00:15 =    0.3/s Avg:    11 Min:     8 Max:    14 Err:     5 (100.00%) Active: 0 Started: 50 Finished: 50
+summary =   2250 in 00:27:32 =    1.4/s Avg:    13 Min:     2 Max:   169 Err:   500 (22.22%)
+Tidying up ...    @ 2026 May 6 19:36:48 WAT (1778092608144)
+... end of run
+[0;32m[✓][0m JMeter test completed in 1656s
+[0;34m[INFO][0m Collecting observability data for test window [1778090953 - 1778092609]
+[0;34m[INFO][0m Exporting Prometheus metrics for JMeter test window 2026-05-06T17:54:13Z -> 2026-05-06T18:51:49Z
+[0;32m[✓][0m Prometheus exports saved to /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/metrics
+[0;34m[INFO][0m Exporting Docker service logs for expanded window
+[0;32m[✓][0m Logs exported to /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/logs
+[0;34m[INFO][0m Exporting Tempo trace index for test window
+[0;34m[INFO][0m Fetching full span detail for 500 traces (concurrency: 10)
+[0;34m[INFO][0m Merging span details into tempo-span-details.json
+[0;32m[✓][0m Span details saved: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/traces/tempo-span-details.json (500 traces)
+[0;32m[✓][0m Individual trace files: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/traces/details/
+[0;32m[✓][0m Trace export complete: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/traces
+[0;32m[✓][0m Observability export complete: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability
+[0;34m[INFO][0m Building comprehensive CSV with JMeter, metrics, logs, and traces
+[0;32m[✓][0m Comprehensive CSV: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/comprehensive-results.csv
+[0;34m[INFO][0m Generating test summary...
+
+===============================================================================
+                            TEST SUMMARY
+===============================================================================
+Anomaly ID:         001
+Run ID:             20260506T180913Z
+Test Timestamp:     2026-05-06T18:09:13Z
+Duration:           1656s (requested: 600s)
+JMeter Users:       100
+Ramp-up:            60s
+Run Directory:      /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z
+
+Next Steps:
+1. Review JMeter results:    cat /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/jmeter-results.csv
+2. Review JMeter log:        cat /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/jmeter.log
+3. Check exported logs:      ls -la /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/logs/
+4. Check exported metrics:   ls -la /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/metrics/
+5. Review trace index:       cat /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/traces/tempo-traces.json
+6. Review full span details: cat /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/observability/traces/tempo-span-details.json
+7. Comprehensive CSV:        cat /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/comprehensive-results.csv
+
+===============================================================================
+[0;32m[✓][0m Anomaly test complete!
+[0;34m[INFO][0m Full log: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z/anomaly.log
+[0;34m[INFO][0m Run directory: /home/user/microservices-demo/test/jmeter/anomaly-results/001-20260506T180913Z

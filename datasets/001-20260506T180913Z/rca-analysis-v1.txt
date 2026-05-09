@@ -1,0 +1,144 @@
+# Root Cause Analysis (RCA) for Anomaly ID: 001
+
+## 1. Affected Services
+
+**Primary Affected Service:**
+- **carts** service shows clear anomalies with:
+  - Elevated response times (avg=8.5ms, max=143ms vs other services <21ms)
+  - Higher trace volume (2107 traces vs 107-425 for other services)
+  - Memory and CPU patterns that warrant investigation
+
+**Secondary Observation:**
+- **orders** service shows normal operation patterns but should be monitored as a dependent service
+
+## 2. Root Cause
+
+**Most Likely Cause:**
+The carts service is experiencing **resource contention during Spring Data REST endpoint initialization**, specifically during application startup or configuration reload. The evidence suggests this is not a runtime performance issue but rather a **boot-time configuration problem** that's causing:
+
+1. Repeated endpoint mapping initialization (visible in logs)
+2. Memory pressure during this initialization phase
+3. Temporary performance degradation during the mapping process
+
+The INFO-level logs showing repeated endpoint mappings are not errors themselves, but their frequency and timing suggest the application is either:
+- Restarting repeatedly
+- Reloading configuration frequently
+- Experiencing health check failures causing restarts
+
+## 3. Evidence
+
+**Log Evidence:**
+- Repeated INFO logs from `RepositoryRestHandlerMapping` in carts service (10 mapping entries at 18:05:32.181-185)
+- Same pattern appears in orders service but with normal performance metrics
+- All logs are INFO level, suggesting no explicit errors but abnormal behavior
+
+**Metric Evidence:**
+- [03-container_memory]: Shows memory usage patterns that may indicate:
+  - Memory spikes during the anomaly window
+  - Possible garbage collection pressure
+- [04-container_cpu]: CPU usage likely spiked during the mapping operations
+- [06-http_errors]: Minimal errors (2 points) suggesting this isn't a runtime failure
+
+**Trace Evidence:**
+- carts service shows:
+  - 2107 traces (5-20x more than other services)
+  - avg=8.5ms (2x orders service)
+  - max=143ms (7x orders service max)
+- The trace volume suggests either:
+  - Much higher request volume to carts
+  - Many short-lived requests during initialization
+
+## 4. Impact
+
+**End-User Functionality Affected:**
+1. **Shopping Cart Operations:**
+   - Add/remove items may experience latency or failures
+   - Cart persistence may be unreliable
+   - Checkout process initiation may fail
+
+2. **System-Wide Impact:**
+   - Increased latency for all cart-related operations
+   - Potential cascading delays in dependent services (orders, shipping)
+   - Possible session timeouts for users with active carts
+
+## 5. Suggested Fix
+
+**Immediate Remediation:**
+1. **Check for Application Restarts:**
+   ```bash
+   kubectl get pods -n <namespace> -w | grep carts
+   kubectl logs <carts-pod> --previous  # Check previous instance logs
+   ```
+
+2. **Temporarily Scale Up:**
+   ```bash
+   kubectl scale deployment carts --replicas=3
+   ```
+
+3. **Adjust Health Check Configuration:**
+   - Increase initialDelaySeconds for liveness/readiness probes
+   - Widen failure thresholds to prevent premature restarts
+
+**Short-Term Fixes:**
+1. **Optimize Spring Data REST Configuration:**
+   ```yaml
+   # application.yml
+   spring:
+     data:
+       rest:
+         detection-strategy: annotated  # Only expose annotated repositories
+   ```
+
+2. **Add Circuit Breakers:**
+   - Implement resilience4j or Hystrix for cart operations
+   - Configure appropriate timeouts
+
+3. **Review Resource Allocation:**
+   ```yaml
+   # deployment.yaml
+   resources:
+     limits:
+       memory: "1Gi"  # Increase if memory pressure observed
+       cpu: "1000m"
+     requests:
+       memory: "768Mi"
+       cpu: "500m"
+   ```
+
+**Long-Term Solutions:**
+1. **Implement Lazy Initialization:**
+   - Configure Spring Boot to defer repository initialization
+   ```java
+   @SpringBootApplication
+   @EnableAutoConfiguration(exclude = {
+       DataRestAutoConfiguration.class
+   })
+   public class Application {
+       public static void main(String[] args) {
+           SpringApplication.run(Application.class, args);
+       }
+   }
+   ```
+
+2. **Add Detailed Monitoring:**
+   - Track `RepositoryRestHandlerMapping` initialization events
+   - Monitor application startup time metrics
+   - Set alerts for repeated initialization
+
+3. **Review Deployment Strategy:**
+   - Implement blue-green or canary deployments
+   - Add pre-stop hooks to gracefully handle shutdowns
+   - Consider startup probes in Kubernetes 1.18+
+
+4. **Performance Testing:**
+   - Load test cart operations specifically
+   - Test with various repository configurations
+   - Measure impact of different Spring Data REST settings
+
+**Verification Steps:**
+1. Monitor carts service response times after changes
+2. Verify endpoint mapping logs appear only once per pod startup
+3. Check memory/CPU metrics for stabilization
+4. Validate dependent services (orders, shipping) show normal patterns
+
+The root cause appears to be configuration-related rather than a code defect, making the suggested fixes primarily operational and configuration improvements.

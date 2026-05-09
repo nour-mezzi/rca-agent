@@ -1,0 +1,376 @@
+2026-05-05 19:57:55,657 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-05-05 19:57:55,685 INFO o.a.j.JMeter: Loading user properties from: /home/user/apache-jmeter-5.6.3/bin/user.properties
+2026-05-05 19:57:55,686 INFO o.a.j.JMeter: Loading system properties from: /home/user/apache-jmeter-5.6.3/bin/system.properties
+2026-05-05 19:57:55,686 INFO o.a.j.JMeter: Setting JMeter property: users=100
+2026-05-05 19:57:55,687 INFO o.a.j.JMeter: Setting JMeter property: rampup=60
+2026-05-05 19:57:55,687 INFO o.a.j.JMeter: Setting JMeter property: duration=1800
+2026-05-05 19:57:55,697 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-05-05 19:57:55,697 INFO o.a.j.JMeter: Version 5.6.3
+2026-05-05 19:57:55,697 INFO o.a.j.JMeter: java.version=17.0.18
+2026-05-05 19:57:55,697 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: os.name=Linux
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: os.arch=amd64
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: os.version=6.6.87.1-microsoft-standard-WSL2
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: java.awt.headless=true
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: Max memory     =1073741824
+2026-05-05 19:57:55,698 INFO o.a.j.JMeter: Available Processors =16
+2026-05-05 19:57:55,716 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-05-05 19:57:55,716 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-05-05 19:57:55,717 INFO o.a.j.JMeter: JMeterHome=/home/user/apache-jmeter-5.6.3
+2026-05-05 19:57:55,717 INFO o.a.j.JMeter: user.dir  =/home/user/microservices-demo/test/jmeter
+2026-05-05 19:57:55,717 INFO o.a.j.JMeter: PWD       =/home/user/microservices-demo/test/jmeter
+2026-05-05 19:57:55,717 INFO o.a.j.JMeter: IP: 127.0.1.1 Name: DESKTOP-VUJ46NP FullName: DESKTOP-VUJ46NP.localdomain
+2026-05-05 19:57:55,738 INFO o.a.j.s.FileServer: Default base='/home/user/microservices-demo/test/jmeter'
+2026-05-05 19:57:55,741 INFO o.a.j.s.FileServer: Set new base='/home/user/microservices-demo/test/jmeter'
+2026-05-05 19:57:56,029 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-05-05 19:57:56,073 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2026-05-05 19:57:56,077 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2026-05-05 19:57:56,083 INFO o.a.j.s.SaveService: Loading file: /home/user/microservices-demo/test/jmeter/sock-shop-trace-test.jmx
+2026-05-05 19:57:56,174 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05 19:57:56,174 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05 19:57:56,174 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05 19:57:56,175 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-05-05 19:57:56,175 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-05-05 19:57:56,175 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-05-05 19:57:56,193 INFO o.a.j.JMeter: Creating summariser <summary>
+2026-05-05 19:57:56,225 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2026-05-05 19:57:56,226 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-05-05 19:57:56,226 INFO o.a.j.s.SampleEvent: List of sample_variables: []
+2026-05-05 19:57:56,236 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2026-05-05 19:57:56,236 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2026-05-05 19:57:56,334 INFO o.a.j.JMeter: Running test (1778007476334)
+2026-05-05 19:57:56,374 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : Trace Test Users
+2026-05-05 19:57:56,375 INFO o.a.j.e.StandardJMeterEngine: Starting 100 threads for group Trace Test Users.
+2026-05-05 19:57:56,375 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-05-05 19:57:56,375 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=100 ramp-up=60 delayedStart=false
+2026-05-05 19:57:56,383 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-1
+2026-05-05 19:57:56,452 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2026-05-05 19:57:56,452 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2026-05-05 19:57:56,980 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-2
+2026-05-05 19:57:57,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-3
+2026-05-05 19:57:58,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-4
+2026-05-05 19:57:58,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-5
+2026-05-05 19:57:59,379 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-6
+2026-05-05 19:57:59,552 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = DESKTOP-VUJ46NP
+2026-05-05 19:57:59,561 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2026-05-05 19:57:59,564 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2026-05-05 19:57:59,565 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2026-05-05 19:57:59,565 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2026-05-05 19:57:59,565 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2026-05-05 19:57:59,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-7
+2026-05-05 19:58:00,279 INFO o.a.j.r.Summariser: summary +      2 in 00:00:04 =    0.5/s Avg:    20 Min:     2 Max:    39 Err:     0 (0.00%) Active: 7 Started: 7 Finished: 0
+2026-05-05 19:58:00,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-8
+2026-05-05 19:58:01,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-9
+2026-05-05 19:58:01,778 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-10
+2026-05-05 19:58:02,378 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-11
+2026-05-05 19:58:02,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-12
+2026-05-05 19:58:03,578 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-13
+2026-05-05 19:58:04,178 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-14
+2026-05-05 19:58:04,779 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-15
+2026-05-05 19:58:05,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-16
+2026-05-05 19:58:05,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-17
+2026-05-05 19:58:06,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-18
+2026-05-05 19:58:07,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-19
+2026-05-05 19:58:07,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-20
+2026-05-05 19:58:08,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-21
+2026-05-05 19:58:08,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-22
+2026-05-05 19:58:09,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-23
+2026-05-05 19:58:10,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-24
+2026-05-05 19:58:10,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-25
+2026-05-05 19:58:11,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-26
+2026-05-05 19:58:11,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-27
+2026-05-05 19:58:12,578 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-28
+2026-05-05 19:58:13,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-29
+2026-05-05 19:58:13,778 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-30
+2026-05-05 19:58:14,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-31
+2026-05-05 19:58:14,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-32
+2026-05-05 19:58:15,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-33
+2026-05-05 19:58:16,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-34
+2026-05-05 19:58:16,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-35
+2026-05-05 19:58:17,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-36
+2026-05-05 19:58:17,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-37
+2026-05-05 19:58:18,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-38
+2026-05-05 19:58:19,178 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-39
+2026-05-05 19:58:19,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-40
+2026-05-05 19:58:20,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-41
+2026-05-05 19:58:20,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-42
+2026-05-05 19:58:21,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-43
+2026-05-05 19:58:22,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-44
+2026-05-05 19:58:22,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-45
+2026-05-05 19:58:23,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-46
+2026-05-05 19:58:23,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-47
+2026-05-05 19:58:24,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-48
+2026-05-05 19:58:25,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-49
+2026-05-05 19:58:25,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-50
+2026-05-05 19:58:26,378 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-51
+2026-05-05 19:58:26,978 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-52
+2026-05-05 19:58:27,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-53
+2026-05-05 19:58:28,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-54
+2026-05-05 19:58:28,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-55
+2026-05-05 19:58:29,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-56
+2026-05-05 19:58:29,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-57
+2026-05-05 19:58:30,167 INFO o.a.j.r.Summariser: summary +    296 in 00:00:30 =    9.9/s Avg:     4 Min:     2 Max:    24 Err:     0 (0.00%) Active: 57 Started: 57 Finished: 0
+2026-05-05 19:58:30,168 INFO o.a.j.r.Summariser: summary =    298 in 00:00:34 =    8.8/s Avg:     4 Min:     2 Max:    39 Err:     0 (0.00%)
+2026-05-05 19:58:30,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-58
+2026-05-05 19:58:31,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-59
+2026-05-05 19:58:31,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-60
+2026-05-05 19:58:32,378 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-61
+2026-05-05 19:58:32,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-62
+2026-05-05 19:58:33,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-63
+2026-05-05 19:58:34,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-64
+2026-05-05 19:58:34,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-65
+2026-05-05 19:58:35,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-66
+2026-05-05 19:58:35,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-67
+2026-05-05 19:58:36,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-68
+2026-05-05 19:58:37,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-69
+2026-05-05 19:58:37,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-70
+2026-05-05 19:58:38,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-71
+2026-05-05 19:58:38,978 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-72
+2026-05-05 19:58:39,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-73
+2026-05-05 19:58:40,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-74
+2026-05-05 19:58:40,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-75
+2026-05-05 19:58:41,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-76
+2026-05-05 19:58:41,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-77
+2026-05-05 19:58:42,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-78
+2026-05-05 19:58:43,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-79
+2026-05-05 19:58:43,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-80
+2026-05-05 19:58:44,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-81
+2026-05-05 19:58:44,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-82
+2026-05-05 19:58:45,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-83
+2026-05-05 19:58:46,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-84
+2026-05-05 19:58:46,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-85
+2026-05-05 19:58:47,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-86
+2026-05-05 19:58:47,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-87
+2026-05-05 19:58:48,577 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-88
+2026-05-05 19:58:49,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-89
+2026-05-05 19:58:49,777 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-90
+2026-05-05 19:58:50,377 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-91
+2026-05-05 19:58:50,977 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-92
+2026-05-05 19:58:51,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-93
+2026-05-05 19:58:52,177 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-94
+2026-05-05 19:58:52,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-95
+2026-05-05 19:58:53,376 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-96
+2026-05-05 19:58:53,976 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-97
+2026-05-05 19:58:54,576 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-98
+2026-05-05 19:58:55,176 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-99
+2026-05-05 19:58:55,776 INFO o.a.j.t.JMeterThread: Thread started: Trace Test Users 1-100
+2026-05-05 19:59:00,007 INFO o.a.j.r.Summariser: summary +    786 in 00:00:30 =   26.3/s Avg:     3 Min:     1 Max:    10 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 19:59:00,008 INFO o.a.j.r.Summariser: summary =   1084 in 00:01:04 =   17.0/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 19:59:30,068 INFO o.a.j.r.Summariser: summary +   1005 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    25 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 19:59:30,069 INFO o.a.j.r.Summariser: summary =   2089 in 00:01:34 =   22.3/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:00:00,054 INFO o.a.j.r.Summariser: summary +   1003 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:     8 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:00:00,055 INFO o.a.j.r.Summariser: summary =   3092 in 00:02:04 =   25.0/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:00:30,024 INFO o.a.j.r.Summariser: summary +    988 in 00:00:30 =   33.0/s Avg:     3 Min:     1 Max:    16 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:00:30,024 INFO o.a.j.r.Summariser: summary =   4080 in 00:02:34 =   26.5/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:01:00,034 INFO o.a.j.r.Summariser: summary +   1010 in 00:00:30 =   33.7/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:01:00,035 INFO o.a.j.r.Summariser: summary =   5090 in 00:03:04 =   27.7/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:01:30,011 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:01:30,012 INFO o.a.j.r.Summariser: summary =   6087 in 00:03:34 =   28.5/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:02:00,007 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:    23 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:02:00,008 INFO o.a.j.r.Summariser: summary =   7086 in 00:04:04 =   29.1/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:02:30,034 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:02:30,034 INFO o.a.j.r.Summariser: summary =   8083 in 00:04:34 =   29.5/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:03:00,067 INFO o.a.j.r.Summariser: summary +    998 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:03:00,068 INFO o.a.j.r.Summariser: summary =   9081 in 00:05:04 =   29.9/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:03:30,015 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    17 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:03:30,015 INFO o.a.j.r.Summariser: summary =  10080 in 00:05:34 =   30.2/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:04:00,111 INFO o.a.j.r.Summariser: summary +   1007 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:04:00,111 INFO o.a.j.r.Summariser: summary =  11087 in 00:06:04 =   30.5/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:04:30,056 INFO o.a.j.r.Summariser: summary +    990 in 00:00:30 =   33.1/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:04:30,057 INFO o.a.j.r.Summariser: summary =  12077 in 00:06:34 =   30.7/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:05:00,034 INFO o.a.j.r.Summariser: summary +   1000 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:05:00,035 INFO o.a.j.r.Summariser: summary =  13077 in 00:07:04 =   30.9/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:05:30,007 INFO o.a.j.r.Summariser: summary +   1004 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:     5 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:05:30,007 INFO o.a.j.r.Summariser: summary =  14081 in 00:07:34 =   31.0/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:06:00,052 INFO o.a.j.r.Summariser: summary +   1006 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    28 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:06:00,053 INFO o.a.j.r.Summariser: summary =  15087 in 00:08:04 =   31.2/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:06:30,003 INFO o.a.j.r.Summariser: summary +    994 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:06:30,003 INFO o.a.j.r.Summariser: summary =  16081 in 00:08:34 =   31.3/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:07:00,004 INFO o.a.j.r.Summariser: summary +   1002 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:07:00,005 INFO o.a.j.r.Summariser: summary =  17083 in 00:09:04 =   31.4/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:07:30,044 INFO o.a.j.r.Summariser: summary +   1005 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    15 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:07:30,047 INFO o.a.j.r.Summariser: summary =  18088 in 00:09:34 =   31.5/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:08:00,009 INFO o.a.j.r.Summariser: summary +   1005 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    16 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:08:00,010 INFO o.a.j.r.Summariser: summary =  19093 in 00:10:04 =   31.6/s Avg:     3 Min:     1 Max:    39 Err:     0 (0.00%)
+2026-05-05 20:08:30,008 INFO o.a.j.r.Summariser: summary +   1002 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:08:30,009 INFO o.a.j.r.Summariser: summary =  20095 in 00:10:34 =   31.7/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:09:00,027 INFO o.a.j.r.Summariser: summary +    994 in 00:00:30 =   33.1/s Avg:     3 Min:     1 Max:    25 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:09:00,028 INFO o.a.j.r.Summariser: summary =  21089 in 00:11:04 =   31.8/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:09:30,022 INFO o.a.j.r.Summariser: summary +   1002 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    12 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:09:30,023 INFO o.a.j.r.Summariser: summary =  22091 in 00:11:34 =   31.8/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:10:00,015 INFO o.a.j.r.Summariser: summary +    987 in 00:00:30 =   32.9/s Avg:     3 Min:     1 Max:    21 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:10:00,015 INFO o.a.j.r.Summariser: summary =  23078 in 00:12:04 =   31.9/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:10:30,071 INFO o.a.j.r.Summariser: summary +   1002 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:10:30,071 INFO o.a.j.r.Summariser: summary =  24080 in 00:12:34 =   31.9/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:11:00,030 INFO o.a.j.r.Summariser: summary +   1003 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    19 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:11:00,031 INFO o.a.j.r.Summariser: summary =  25083 in 00:13:04 =   32.0/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:11:30,031 INFO o.a.j.r.Summariser: summary +   1008 in 00:00:30 =   33.6/s Avg:     3 Min:     1 Max:    26 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:11:30,032 INFO o.a.j.r.Summariser: summary =  26091 in 00:13:34 =   32.1/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:12:00,003 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     5 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:12:00,003 INFO o.a.j.r.Summariser: summary =  27090 in 00:14:04 =   32.1/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:12:30,002 INFO o.a.j.r.Summariser: summary +    995 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    23 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:12:30,002 INFO o.a.j.r.Summariser: summary =  28085 in 00:14:34 =   32.1/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:13:00,047 INFO o.a.j.r.Summariser: summary +    996 in 00:00:30 =   33.1/s Avg:     3 Min:     1 Max:    21 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:13:00,048 INFO o.a.j.r.Summariser: summary =  29081 in 00:15:04 =   32.2/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:13:30,015 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:13:30,017 INFO o.a.j.r.Summariser: summary =  30078 in 00:15:34 =   32.2/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:14:00,006 INFO o.a.j.r.Summariser: summary +    996 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    27 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:14:00,006 INFO o.a.j.r.Summariser: summary =  31074 in 00:16:04 =   32.2/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:14:30,043 INFO o.a.j.r.Summariser: summary +    991 in 00:00:30 =   33.0/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:14:30,044 INFO o.a.j.r.Summariser: summary =  32065 in 00:16:34 =   32.3/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:15:00,056 INFO o.a.j.r.Summariser: summary +   1009 in 00:00:30 =   33.6/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:15:00,057 INFO o.a.j.r.Summariser: summary =  33074 in 00:17:04 =   32.3/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:15:30,001 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:15:30,001 INFO o.a.j.r.Summariser: summary =  34073 in 00:17:34 =   32.3/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:16:00,038 INFO o.a.j.r.Summariser: summary +    996 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:16:00,038 INFO o.a.j.r.Summariser: summary =  35069 in 00:18:04 =   32.4/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:16:30,065 INFO o.a.j.r.Summariser: summary +   1006 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:16:30,065 INFO o.a.j.r.Summariser: summary =  36075 in 00:18:34 =   32.4/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:17:00,060 INFO o.a.j.r.Summariser: summary +    996 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    15 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:17:00,061 INFO o.a.j.r.Summariser: summary =  37071 in 00:19:04 =   32.4/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:17:30,001 INFO o.a.j.r.Summariser: summary +   1012 in 00:00:30 =   33.8/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:17:30,002 INFO o.a.j.r.Summariser: summary =  38083 in 00:19:34 =   32.4/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:18:00,010 INFO o.a.j.r.Summariser: summary +    995 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    30 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:18:00,010 INFO o.a.j.r.Summariser: summary =  39078 in 00:20:04 =   32.5/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:18:30,000 INFO o.a.j.r.Summariser: summary +    995 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    24 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:18:30,001 INFO o.a.j.r.Summariser: summary =  40073 in 00:20:34 =   32.5/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:19:00,055 INFO o.a.j.r.Summariser: summary +   1010 in 00:00:30 =   33.6/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:19:00,056 INFO o.a.j.r.Summariser: summary =  41083 in 00:21:04 =   32.5/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:19:30,014 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:    17 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:19:30,015 INFO o.a.j.r.Summariser: summary =  42082 in 00:21:34 =   32.5/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:20:00,007 INFO o.a.j.r.Summariser: summary +   1001 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:20:00,008 INFO o.a.j.r.Summariser: summary =  43083 in 00:22:04 =   32.5/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:20:30,015 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:20:30,015 INFO o.a.j.r.Summariser: summary =  44080 in 00:22:34 =   32.6/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:21:00,091 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    26 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:21:00,091 INFO o.a.j.r.Summariser: summary =  45079 in 00:23:04 =   32.6/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:21:30,089 INFO o.a.j.r.Summariser: summary +    994 in 00:00:30 =   33.1/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:21:30,090 INFO o.a.j.r.Summariser: summary =  46073 in 00:23:34 =   32.6/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:22:00,030 INFO o.a.j.r.Summariser: summary +    996 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:22:00,032 INFO o.a.j.r.Summariser: summary =  47069 in 00:24:04 =   32.6/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:22:30,014 INFO o.a.j.r.Summariser: summary +    994 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:22:30,015 INFO o.a.j.r.Summariser: summary =  48063 in 00:24:34 =   32.6/s Avg:     3 Min:     1 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:23:00,005 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.2/s Avg:     3 Min:     0 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:23:00,006 INFO o.a.j.r.Summariser: summary =  49060 in 00:25:04 =   32.6/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:23:30,060 INFO o.a.j.r.Summariser: summary +    993 in 00:00:30 =   33.0/s Avg:     3 Min:     1 Max:    20 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:23:30,061 INFO o.a.j.r.Summariser: summary =  50053 in 00:25:34 =   32.6/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:24:00,013 INFO o.a.j.r.Summariser: summary +    999 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:    23 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:24:00,013 INFO o.a.j.r.Summariser: summary =  51052 in 00:26:04 =   32.6/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:24:30,038 INFO o.a.j.r.Summariser: summary +    993 in 00:00:30 =   33.1/s Avg:     2 Min:     1 Max:    12 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:24:30,038 INFO o.a.j.r.Summariser: summary =  52045 in 00:26:34 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:25:00,002 INFO o.a.j.r.Summariser: summary +    992 in 00:00:30 =   33.1/s Avg:     3 Min:     1 Max:    22 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:25:00,003 INFO o.a.j.r.Summariser: summary =  53037 in 00:27:04 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:25:30,076 INFO o.a.j.r.Summariser: summary +   1013 in 00:00:30 =   33.7/s Avg:     3 Min:     1 Max:    28 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:25:30,077 INFO o.a.j.r.Summariser: summary =  54050 in 00:27:34 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:26:00,008 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.3/s Avg:     3 Min:     1 Max:     6 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:26:00,008 INFO o.a.j.r.Summariser: summary =  55047 in 00:28:04 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:26:30,018 INFO o.a.j.r.Summariser: summary +   1006 in 00:00:30 =   33.5/s Avg:     3 Min:     1 Max:    37 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:26:30,018 INFO o.a.j.r.Summariser: summary =  56053 in 00:28:34 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:27:00,014 INFO o.a.j.r.Summariser: summary +    997 in 00:00:30 =   33.2/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:27:00,015 INFO o.a.j.r.Summariser: summary =  57050 in 00:29:04 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:27:30,044 INFO o.a.j.r.Summariser: summary +   1004 in 00:00:30 =   33.4/s Avg:     3 Min:     1 Max:     7 Err:     0 (0.00%) Active: 100 Started: 100 Finished: 0
+2026-05-05 20:27:30,044 INFO o.a.j.r.Summariser: summary =  58054 in 00:29:34 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)
+2026-05-05 20:27:53,044 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-29
+2026-05-05 20:27:53,122 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-52
+2026-05-05 20:27:53,163 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-79
+2026-05-05 20:27:53,164 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-63
+2026-05-05 20:27:53,425 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-2
+2026-05-05 20:27:53,619 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-4
+2026-05-05 20:27:53,650 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-90
+2026-05-05 20:27:53,967 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-59
+2026-05-05 20:27:54,011 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-58
+2026-05-05 20:27:54,030 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-73
+2026-05-05 20:27:54,056 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-11
+2026-05-05 20:27:54,074 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-12
+2026-05-05 20:27:54,123 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-93
+2026-05-05 20:27:54,135 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-87
+2026-05-05 20:27:54,146 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-97
+2026-05-05 20:27:54,153 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-19
+2026-05-05 20:27:54,225 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-21
+2026-05-05 20:27:54,271 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-36
+2026-05-05 20:27:54,281 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-50
+2026-05-05 20:27:54,287 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-47
+2026-05-05 20:27:54,345 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-41
+2026-05-05 20:27:54,418 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-66
+2026-05-05 20:27:54,429 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-57
+2026-05-05 20:27:54,488 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-76
+2026-05-05 20:27:54,519 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-6
+2026-05-05 20:27:54,528 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-81
+2026-05-05 20:27:54,539 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-14
+2026-05-05 20:27:54,552 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-25
+2026-05-05 20:27:54,568 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-33
+2026-05-05 20:27:54,608 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-95
+2026-05-05 20:27:54,630 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-98
+2026-05-05 20:27:54,633 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-83
+2026-05-05 20:27:54,633 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-89
+2026-05-05 20:27:54,642 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-45
+2026-05-05 20:27:54,653 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-10
+2026-05-05 20:27:54,720 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-74
+2026-05-05 20:27:54,802 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-8
+2026-05-05 20:27:54,830 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-3
+2026-05-05 20:27:54,878 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-67
+2026-05-05 20:27:54,890 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-27
+2026-05-05 20:27:54,896 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-20
+2026-05-05 20:27:54,913 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-16
+2026-05-05 20:27:54,918 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-26
+2026-05-05 20:27:54,919 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-64
+2026-05-05 20:27:54,952 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-53
+2026-05-05 20:27:55,027 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-96
+2026-05-05 20:27:55,051 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-88
+2026-05-05 20:27:55,059 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-100
+2026-05-05 20:27:55,122 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-62
+2026-05-05 20:27:55,125 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-30
+2026-05-05 20:27:55,134 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-13
+2026-05-05 20:27:55,162 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-60
+2026-05-05 20:27:55,162 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-85
+2026-05-05 20:27:55,162 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-77
+2026-05-05 20:27:55,175 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-9
+2026-05-05 20:27:55,207 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-49
+2026-05-05 20:27:55,238 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-65
+2026-05-05 20:27:55,389 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-78
+2026-05-05 20:27:55,395 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-99
+2026-05-05 20:27:55,404 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-7
+2026-05-05 20:27:55,415 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-43
+2026-05-05 20:27:55,449 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-72
+2026-05-05 20:27:55,451 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-94
+2026-05-05 20:27:55,463 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-32
+2026-05-05 20:27:55,488 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-71
+2026-05-05 20:27:55,513 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-54
+2026-05-05 20:27:55,530 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-39
+2026-05-05 20:27:55,590 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-15
+2026-05-05 20:27:55,593 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-46
+2026-05-05 20:27:55,643 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-70
+2026-05-05 20:27:55,653 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-84
+2026-05-05 20:27:55,653 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-1
+2026-05-05 20:27:55,660 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-55
+2026-05-05 20:27:55,708 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-18
+2026-05-05 20:27:55,728 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-56
+2026-05-05 20:27:55,738 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-91
+2026-05-05 20:27:55,746 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-5
+2026-05-05 20:27:55,783 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-86
+2026-05-05 20:27:55,866 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-23
+2026-05-05 20:27:55,886 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-92
+2026-05-05 20:27:55,891 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-24
+2026-05-05 20:27:55,950 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-34
+2026-05-05 20:27:55,995 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-80
+2026-05-05 20:27:56,059 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-38
+2026-05-05 20:27:56,075 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-31
+2026-05-05 20:27:56,094 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-17
+2026-05-05 20:27:56,142 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-42
+2026-05-05 20:27:56,187 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-69
+2026-05-05 20:27:56,206 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-51
+2026-05-05 20:27:56,222 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-37
+2026-05-05 20:27:56,235 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-61
+2026-05-05 20:27:56,258 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-28
+2026-05-05 20:27:56,271 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-68
+2026-05-05 20:27:56,277 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-40
+2026-05-05 20:27:56,289 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-82
+2026-05-05 20:27:56,299 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-35
+2026-05-05 20:27:56,307 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-48
+2026-05-05 20:27:56,350 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-44
+2026-05-05 20:27:56,372 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-75
+2026-05-05 20:27:56,394 INFO o.a.j.t.JMeterThread: Thread finished: Trace Test Users 1-22
+2026-05-05 20:27:56,394 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2026-05-05 20:27:56,396 INFO o.a.j.r.Summariser: summary +    877 in 00:00:26 =   33.3/s Avg:     3 Min:     1 Max:    27 Err:     0 (0.00%) Active: 0 Started: 100 Finished: 100
+2026-05-05 20:27:56,396 INFO o.a.j.r.Summariser: summary =  58931 in 00:30:00 =   32.7/s Avg:     3 Min:     0 Max:    56 Err:     0 (0.00%)

@@ -1,0 +1,152 @@
+### **Root Cause Analysis (RCA) for ANOMALY-007**
+
+---
+
+## **1. Affected Services**
+The following services exhibit anomalies based on the observability data:
+
+| **Service**       | **Anomaly Type**                          | **Severity** |
+|-------------------|------------------------------------------|-------------|
+| **HTTP Layer**    | Missing request rate & error metrics     | **Critical** |
+| **All Services**  | Extreme metric compression (98-99%)      | **High**    |
+| **Shipping**      | High trace volume (9670/10537 traces)    | **Medium**  |
+| **Orders, Carts** | Elevated response times (avg 1.8-2.0ms)  | **Low**     |
+
+**Key Observations:**
+- **HTTP metrics (`http_requests_rate`, `http_errors`) are missing**, suggesting either:
+  - A **metrics collection failure** (Prometheus scrape issue).
+  - A **complete drop in HTTP traffic** (unlikely, given traces exist).
+- **Extreme metric compression (98-99% reduction)** in `http_response_times`, `container_cpu`, and `service_health` indicates:
+  - **Data aggregation/retention policies** are too aggressive.
+  - **Prometheus storage or downsampling** is misconfigured.
+- **Shipping service dominates traces** (92% of total), which may indicate:
+  - A **spike in shipping-related requests** (e.g., batch processing, retries).
+  - A **sampling bias** in tracing (e.g., only shipping traces are being captured).
+
+---
+
+## **2. Root Cause**
+**Most Likely Cause:**
+**Prometheus scrape failure or misconfiguration leading to missing HTTP metrics and extreme data compression.**
+
+**Supporting Hypotheses:**
+1. **Prometheus Scrape Target Down or Unreachable**
+   - If Prometheus cannot scrape HTTP metrics (e.g., due to network issues, misconfigured `scrape_configs`, or a crashed exporter), `http_requests_rate` and `http_errors` would show **no data**.
+   - The **98-99% metric compression** suggests Prometheus is **downsampling aggressively** (possibly due to storage pressure or retention policies).
+
+2. **Prometheus Storage or Retention Issues**
+   - If Prometheus is **low on disk space**, it may **drop or compress metrics** to conserve storage.
+   - The **Douglas-Peucker algorithm** (used for compression) is applied **too aggressively**, losing granularity.
+
+3. **Tracing Sampling Bias (Less Likely)**
+   - The **shipping service dominates traces**, but this could be normal if it’s a high-throughput service.
+   - However, if **other services are not being traced**, this could indicate a **sampling misconfiguration** in the tracing pipeline.
+
+---
+
+## **3. Evidence**
+### **Metrics Anomalies**
+| **Metric**               | **Anomaly**                                                                 | **Implication**                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| `http_requests_rate`     | **No data**                                                                | Prometheus is not scraping HTTP metrics (scrape failure or exporter issue).     |
+| `http_errors`            | **No data**                                                                | Same as above.                                                                  |
+| `http_response_times`    | **98.4% compression** (only 2/124 points retained)                         | Extreme downsampling; likely due to storage pressure or retention policies.     |
+| `container_cpu`          | **98.9% compression** (only 42/3885 points retained)                       | Same as above.                                                                  |
+| `service_health`         | **99.0% compression** (only 22/2211 points retained)                       | Same as above.                                                                  |
+
+### **Traces Anomalies**
+| **Service**  | **Observation**                                                                 | **Implication**                                                                 |
+|--------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| **Shipping** | **9670/10537 traces (92%)**                                                     | Either a **spike in shipping requests** or **sampling bias** in tracing.        |
+| **Orders**   | **Avg latency 1.8ms (max 17ms)**                                                | Slightly elevated, but not critical.                                            |
+| **Carts**    | **Avg latency 2.0ms (max 23ms)**                                                | Slightly elevated, but not critical.                                            |
+
+### **Logs (No Errors)**
+- **No errors in Loki** suggests:
+  - The issue is **not application-level** (e.g., no crashes, no exceptions).
+  - The problem is **infrastructure-related** (Prometheus, tracing pipeline, or network).
+
+---
+
+## **4. Impact**
+### **End-User Functionality Affected**
+| **Service**       | **Impact**                                                                 |
+|-------------------|---------------------------------------------------------------------------|
+| **HTTP Layer**    | **No visibility into request rates or errors** → **blind to outages**.    |
+| **Shipping**      | **Potential slowdowns** if trace volume indicates retries or backpressure. |
+| **Orders/Carts**  | **Minor latency increase**, but not critical.                             |
+
+**Worst-Case Scenario:**
+- If **Prometheus is not scraping HTTP metrics**, the team **cannot detect outages, DDoS attacks, or performance degradations**.
+- If **metrics are being aggressively compressed**, **historical trend analysis is unreliable**.
+
+---
+
+## **5. Suggested Fix**
+### **Immediate Actions**
+1. **Check Prometheus Scrape Status**
+   - Run:
+     ```sh
+     curl -s http://<prometheus-server>/api/v1/targets | jq '.data.activeTargets[] | {health, lastError, scrapeUrl}'
+     ```
+   - **Expected:** All targets should be `health: "up"` with no `lastError`.
+   - **If down:** Check:
+     - **Network connectivity** between Prometheus and exporters.
+     - **Exporter logs** (e.g., `journalctl -u prometheus-node-exporter`).
+     - **Scrape configs** (`prometheus.yml`) for misconfigured targets.
+
+2. **Verify Prometheus Storage & Retention**
+   - Check disk usage:
+     ```sh
+     df -h /var/lib/prometheus
+     ```
+   - Check retention settings:
+     ```sh
+     grep -A5 "storage" /etc/prometheus/prometheus.yml
+     ```
+   - **If low on disk:** Increase retention or add storage.
+   - **If compression is too aggressive:** Adjust `storage.tsdb.retention` or disable downsampling.
+
+3. **Check Tracing Pipeline**
+   - Verify **sampling rate** in Tempo/Jaeger:
+     ```sh
+     grep -A5 "sampler" /etc/tempo.yaml
+     ```
+   - If **shipping traces dominate**, check if:
+     - There’s a **real spike in shipping requests** (e.g., batch job).
+     - **Sampling is misconfigured** (e.g., only shipping traces are being captured).
+
+### **Long-Term Remediation**
+1. **Improve Prometheus Reliability**
+   - **Set up alerts** for scrape failures (`up == 0`).
+   - **Increase retention** (e.g., `storage.tsdb.retention.time: 30d`).
+   - **Add more storage** if disk is full.
+
+2. **Enhance Observability**
+   - **Add synthetic monitoring** (e.g., Blackbox Exporter) to detect HTTP outages.
+   - **Implement SLOs** for critical services (e.g., shipping, orders).
+
+3. **Review Tracing Configuration**
+   - **Adjust sampling** to ensure all services are traced fairly.
+   - **Add trace-based alerts** (e.g., high latency in orders/carts).
+
+4. **Post-Mortem & Documentation**
+   - **Document the incident** (e.g., "Prometheus scrape failure due to misconfigured targets").
+   - **Update runbooks** for similar issues.
+
+---
+
+## **Summary**
+| **Category**       | **Finding**                                                                 |
+|--------------------|-----------------------------------------------------------------------------|
+| **Affected**       | HTTP metrics (missing), all services (compressed metrics), shipping (trace spike). |
+| **Root Cause**     | **Prometheus scrape failure + aggressive metric compression**.             |
+| **Evidence**       | Missing `http_requests_rate`, 98-99% metric compression, no logs.          |
+| **Impact**         | **No visibility into HTTP traffic**, unreliable historical metrics.         |
+| **Fix**            | **Check Prometheus targets, storage, and tracing sampling**.               |
+
+**Next Steps:**
+✅ **Immediately check Prometheus scrape status.**
+✅ **Verify disk space and retention policies.**
+✅ **Investigate why shipping traces dominate.**
+✅ **Set up alerts for scrape failures.**

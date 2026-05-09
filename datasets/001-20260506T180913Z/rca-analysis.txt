@@ -1,0 +1,129 @@
+### **Root Cause Analysis (RCA) for Anomaly ID: 001**
+
+---
+
+## **1. Affected Services**
+The following services exhibited anomalies during the window `2026-05-06T17:54:13Z → 2026-05-06T18:51:49Z`:
+
+| **Service**  | **Anomaly Type**               | **Values**                                                                 | **Peak Timestamp (UTC)** | **Severity**          |
+|--------------|--------------------------------|----------------------------------------------------------------------------|--------------------------|-----------------------|
+| **frontend** | HTTP 404 rate spike            | `avg=0.27168 req/s`, `max=0.87133 req/s` (3.2× avg)                        | 18:13:13                 | **SPIKE (3.2×avg)**   |
+| **frontend** | HTTP 500 error rate            | `avg=0.28572 errors/s`, `max=0.80431 errors/s` (dedicated error metric)    | 18:15:28                 | Persistent errors     |
+| **catalogue**| Latency spike                  | `avg=0.03172s`, `max=0.13941s` (4.4× avg)                                  | 18:10:43                 | **SPIKE (4.4×avg)**   |
+| **orders**   | CPU spike + no HTTP traffic    | `avg=0.00674 cores/s`, `max=0.02463 cores/s` (3.7× avg) + `0 HTTP requests` | 18:06:13                 | **SPIKE (3.7×avg)**   |
+| **tempo**    | CPU spike                      | `avg=0.00716 cores/s`, `max=0.02487 cores/s` (3.5× avg)                     | 18:24:58                 | **SPIKE (3.5×avg)**   |
+| **orders**   | No HTTP traffic (2xx/4xx/5xx)  | `0 requests` (metrics 01, 07, 08)                                           | Entire window            | **No data**           |
+| **shipping** | No HTTP traffic (2xx/4xx/5xx)  | `0 requests` (metrics 01, 07)                                               | Entire window            | **No data**           |
+
+---
+
+## **2. Root Cause**
+### **Confirmed: Frontend Service Serving 404/500 Errors Due to Downstream Orders Service Failure**
+- The **frontend** service is returning **HTTP 404 (3.2× spike) and 500 errors** (dedicated error metric 06) during the anomaly window.
+- The **orders** service shows **zero HTTP traffic** (metrics 01, 07) despite **high CPU usage (3.7× spike)**, suggesting it is **unresponsive to HTTP requests** but still running background processes (e.g., GC, retries, or health checks).
+- The **catalogue** service exhibits a **latency spike (4.4× avg)**, likely due to **retries or timeouts** when calling the failed **orders** service.
+- The **shipping** service also shows **zero HTTP traffic**, but since it depends on **orders** (e.g., for order fulfillment), its inactivity is a **secondary effect** of the **orders** failure.
+
+### **Hypothesis: Orders Service Crashed or Deadlocked**
+- The **orders** service has **no HTTP traffic** but **high CPU usage**, which could indicate:
+  - A **deadlock** or **thread exhaustion** (e.g., stuck in a loop or waiting on a resource).
+  - A **crash loop** where the service restarts but fails to handle requests.
+  - A **dependency failure** (e.g., database connection pool exhaustion).
+- The **lack of HTTP 5xx metrics** for **orders** suggests it is **not even accepting connections**, reinforcing the deadlock/crash hypothesis.
+
+---
+
+## **3. Evidence**
+### **Frontend Errors (Primary Symptom)**
+- **HTTP 404 spike** (metric 01):
+  - `job=frontend, status_code=404`: `max=0.87133 req/s` at **18:13:13 UTC** (3.2× avg).
+- **HTTP 500 errors** (metric 06):
+  - `job=frontend, status_code=500`: `max=0.80431 errors/s` at **18:15:28 UTC**.
+- **No frontend logs** indicate a root cause (only a single `MemoryStore` warning at startup, irrelevant).
+
+### **Orders Service Failure (Root Cause)**
+- **No HTTP traffic** (metrics 01, 07):
+  - `job=orders, status_code=200`: `0 req/s` (entire window).
+  - `job=orders` (Java 2xx health): `0.0` (entire window).
+- **CPU spike** (metric 04):
+  - `container_label_com_docker_compose_service=orders`: `max=0.02463 cores/s` at **18:06:13 UTC** (3.7× avg).
+- **No errors logged** (no 5xx metrics for orders), suggesting **requests are not reaching the service**.
+
+### **Downstream Impact**
+- **Catalogue latency spike** (metric 02):
+  - `job=catalogue`: `max=0.13941s` at **18:10:43 UTC** (4.4× avg).
+- **Shipping service inactive** (metrics 01, 07):
+  - `job=shipping, status_code=200`: `0 req/s` (entire window).
+  - `job=shipping` (Java 2xx health): `0.0` (entire window).
+
+### **Tempo Traces (Corroborating Evidence)**
+- **Orders traces**: Only **107 traces** (vs. **2107 for carts**), with `avg=4.1ms` but **no HTTP traffic**, suggesting **requests are not reaching the service**.
+- **Shipping traces**: Only **107 traces**, matching the **zero HTTP traffic** observation.
+
+---
+
+## **4. Impact**
+### **User-Facing Issues**
+1. **Failed Checkout Flow**:
+   - Users attempting to **place orders** will see **500 errors** (frontend) or **404s** (missing order endpoints).
+   - The **orders service** is unresponsive, so **no new orders can be created**.
+2. **Slow Product Browsing**:
+   - The **catalogue service** has **high latency (4.4× spike)**, likely due to **retries/timeouts** when calling the failed **orders** service.
+3. **Shipping Unavailable**:
+   - The **shipping service** is inactive, so **order fulfillment is blocked**.
+
+### **Business Impact**
+- **Lost revenue** (users cannot complete purchases).
+- **Degraded user experience** (slow page loads, errors).
+- **Operational blind spot** (no HTTP traffic from orders, but CPU is high).
+
+---
+
+## **5. Suggested Fix**
+### **Immediate Actions**
+1. **Restart the Orders Service**:
+   - The **high CPU + zero HTTP traffic** suggests a **deadlock or crash loop**.
+   - A restart may resolve transient issues (e.g., thread exhaustion, memory leaks).
+   - **Command**: `docker restart orders` (or equivalent in Kubernetes).
+2. **Check Orders Service Logs**:
+   - Since **no HTTP errors** are logged, inspect **application logs** for:
+     - `OutOfMemoryError` (Java heap exhaustion).
+     - `Deadlock` or `Thread starvation` (thread dumps).
+     - Database connection pool exhaustion.
+   - **Query Loki**:
+     ```logql
+     {container="orders"} |= "error" |~ "OutOfMemory|Deadlock|Thread|SQLException"
+     ```
+3. **Verify Database Connectivity**:
+   - The **orders-db** container shows **stable CPU/memory**, but the **orders** service may be failing to connect.
+   - Check **orders-db logs** for connection rejections.
+
+### **Long-Term Fixes**
+1. **Add Circuit Breakers**:
+   - Implement **resilience patterns** (e.g., Hystrix, Resilience4j) in the **frontend** and **catalogue** services to **fail fast** when **orders** is down.
+2. **Improve Monitoring**:
+   - Add **custom metrics** for:
+     - **Database connection pool usage** (orders service).
+     - **Thread pool utilization** (to detect deadlocks).
+   - Set up **alerts** for:
+     - **Zero HTTP traffic + high CPU** (orders service).
+     - **HTTP 500 errors** (frontend).
+3. **Review Orders Service Dependencies**:
+   - The **orders** service may be **blocking on an external call** (e.g., payment gateway, database).
+   - **Enable distributed tracing** (Tempo) to identify slow dependencies.
+4. **Load Test the Orders Service**:
+   - The **CPU spike** suggests **inefficient code** (e.g., N+1 queries, unoptimized loops).
+   - **Profile the service** under load to identify bottlenecks.
+
+### **Rollback Plan (If Restart Fails)**
+- **Deploy a known-good version** of the **orders** service.
+- **Scale down dependent services** (frontend, catalogue) to reduce retries and timeouts.
+
+---
+
+## **Summary**
+| **Root Cause**               | **Evidence**                                                                 | **Impact**                          | **Fix**                          |
+|------------------------------|------------------------------------------------------------------------------|-------------------------------------|----------------------------------|
+| **Orders service failure**   | Zero HTTP traffic + high CPU (3.7× spike), frontend 404/500 errors          | Checkout flow broken, slow browsing | Restart orders, check logs       |
+| **Downstream latency**       | Catalogue latency spike (4.4× avg), shipping inactive                        | Degraded UX                         | Circuit breakers, tracing        |
+| **Monitoring gaps**          | No HTTP errors logged for orders, no alerts for zero traffic + high CPU     | Blind spots in observability        | Add custom metrics, alerts       |

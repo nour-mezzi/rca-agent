@@ -1,8 +1,0 @@
-time="2026-04-06T08:31:12Z" level=info msg="Traefik version v1.1.2 built on 2016-12-15_10:21:15AM" 
-time="2026-04-06T08:31:12Z" level=info msg="Using TOML configuration file /etc/traefik/traefik.toml" 
-time="2026-04-06T08:31:12Z" level=info msg="Preparing server http &{Network: Address::80 TLS:<nil> Redirect:<nil> Auth:<nil> Compress:false}" 
-time="2026-04-06T08:31:12Z" level=info msg="Starting provider *provider.File {\"Watch\":true,\"Filename\":\"/etc/traefik/traefik.toml\",\"Constraints\":null}" 
-time="2026-04-06T08:31:12Z" level=info msg="Starting provider *main.WebProvider {\"Address\":\":8080\",\"CertFile\":\"\",\"KeyFile\":\"\",\"ReadOnly\":false,\"Auth\":null}" 
-time="2026-04-06T08:31:12Z" level=info msg="Starting server on :80" 
-time="2026-04-06T08:31:12Z" level=info msg="Server configuration reloaded on :80" 
-time="2026-04-06T08:31:12Z" level=warning msg="Error checking new version: Get https://update.traefik.io/repos/containous/traefik/releases: x509: certificate signed by unknown authority" 
