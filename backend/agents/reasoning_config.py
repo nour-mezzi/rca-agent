@@ -92,7 +92,7 @@ For each remaining hypothesis, answer:
     Distributed: Multiple services or cascade effect
     
 (b) DOES THE EVIDENCE SHOW CAUSE OR EFFECT?
-    Root cause: The fundamental failure (e.g., service crash, resource exhaustion)
+    Root cause: The fundamental failure (e.g., service crash, resource exhaustion, network latency)
     Effect: Secondary symptom (e.g., 5xx errors from retry failures)
     
     Tip: Causes usually happen FIRST in time. Effects follow. Check timestamps.
@@ -107,9 +107,23 @@ For each remaining hypothesis, answer:
     Is there a clear cause → effect → effect sequence with minimal time gaps?
     If gaps > 5 minutes, explain why (queuing, retry backoff, etc.)
 
-Answer: "After refinement, rank the top 2 hypotheses by evidence strength."
+(e) FAILURE DOMAIN CLASSIFICATION:
+    Where is the true failure origin? NOT the most visible victim.
+    Categories:
+      • SERVICE: Specific service crashed, had code bug, resource exhaustion, etc.
+      • DATABASE: DB timeout, connection pool exhausted, slow queries, connection failure
+      • NETWORK: Latency spike, packet loss, DNS failure, network partition, route misconfiguration
+      • INFRASTRUCTURE: Kubernetes scheduler issue, container resource limits, host CPU throttling, storage I/O
+      • CONFIGURATION: Misconfigured env var, limits, replicas, feature flags, deprecated API
+      • OTHER: Identify what type
+    
+    IMPORTANT: Don't default to "service" just because a service shows errors.
+    Errors in a service are usually EFFECTS of something else failing.
+    Ask: "What made this service fail?" Then identify that root cause's domain.
+
+Answer: "After refinement, rank the top 2 hypotheses by evidence strength. For each, specify the failure domain."
 """,
-        "validates": "Distinguishes true causes from effects; checks temporal logic"
+        "validates": "Distinguishes true causes from effects; checks temporal logic; enforces domain classification"
     },
     
     {

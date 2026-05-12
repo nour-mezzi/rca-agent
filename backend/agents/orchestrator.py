@@ -124,7 +124,15 @@ REASONING RULES:
 - If two signals point to the same service at the same UTC time, that is strong confirmation.
 - If evidence is genuinely insufficient, say so — do not guess.
 - "Confirmed" requires BOTH: (1) at least two independent signal types point to the same failure, AND (2) every step of the causal_chain has direct evidence — a log line, a metric value, or a trace span. A metric correlation alone (e.g., service A CPU spike preceded service B latency spike) is "Hypothesis", not "Confirmed", because the mechanism is inferred.
-- Build the causal_chain step by step in chronological order. Each step must name the service, what happened, the UTC time, and a verbatim evidence citation. Do NOT skip steps — every arrow in the causal chain must be evidenced.
+- Build the causal_chain step by step in chronological order. Each step must name the failure domain (service/network/database/infrastructure/config), what happened, the UTC time, and a verbatim evidence citation. Do NOT skip steps — every arrow in the causal chain must be evidenced.
+- FAILURE DOMAIN CLARITY: The failure_domain field captures WHERE the failure originated, NOT the most visible victim. 
+  Examples: 
+    - If frontend has 5xx errors because orders service is down → failure_domain: "orders" (the service that failed)
+    - If requests are timing out due to network latency spike → failure_domain: "network"
+    - If database queries are slow due to connection pool exhaustion → failure_domain: "database"
+    - If CPU spike is from Kubernetes resource limits → failure_domain: "infrastructure"
+    - If service crashes due to misconfigured environment variable → failure_domain: "configuration"
+  Do NOT default to service names — consider infrastructure, network, database, and configuration as root causes.
 - CROSS-SIGNAL CONTRADICTION: If metrics show 0 req/s for a service but traces contain spans for it within the anomaly window, the metric has an instrumentation gap — the service WAS handling traffic. State the discrepancy explicitly. Never call a service "idle" when traces contradict this.
 - Before concluding any service received no traffic, check trace data for spans. If found, investigate with ask_trace_agent or ask_metrics_agent before proceeding.
 
@@ -193,14 +201,14 @@ OUTPUT FORMAT — respond with a single valid JSON object. No text outside the J
   ],
   "root_cause": {
     "confidence": "<Confirmed|Hypothesis>",
-    "primary_service": "<the service where the failure originated — NOT the most visible victim>",
-    "failure_mode": "<exact failure type: crash|oom|connection_refused|dns_failure|db_timeout|config_error|dependency_unavailable|instrumentation_gap|other>",
-    "summary": "<one sentence — must name the originating service and failure mode>",
+    "failure_domain": "<Name of the system component where the failure originated. Can be: service name (orders, frontend), infrastructure (kubernetes, container, network), database (query timeout, connection pool), configuration issue, or other. NOT necessarily the most visible victim — identify the true source>",
+    "failure_mode": "<exact failure type: crash|oom|connection_refused|dns_failure|db_timeout|db_connection_pool_exhausted|config_error|dependency_unavailable|instrumentation_gap|network_latency|network_partition|resource_exhaustion|infrastructure_throttling|other>",
+    "summary": "<one sentence — must name the failure domain and failure mode, clearly stating what actually failed at the source>",
     "causal_chain": [
       {
         "step": 1,
         "time_utc": "<HH:MM:SS UTC or null if unknown>",
-        "service": "<service name>",
+        "service": "<service name or 'infrastructure'/'network'/'database' if not a service>",
         "event": "<factual description of what happened at this step>",
         "evidence": "<verbatim log line with ×count, exact metric value with timestamp, or trace ID — no paraphrasing>"
       }

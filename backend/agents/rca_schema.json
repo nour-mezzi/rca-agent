@@ -205,20 +205,20 @@
     },
     "root_cause": {
       "type": "object",
-      "required": ["statement", "service", "component", "failure_type", "evidence_citations"],
+      "required": ["statement", "failure_domain", "failure_type", "evidence_citations"],
       "additionalProperties": false,
       "properties": {
         "statement": {
           "type": "string",
           "description": "One or two sentence definitive statement of the root cause"
         },
-        "service": {
+        "failure_domain": {
           "type": "string",
-          "description": "Primary service where the root cause originated"
+          "description": "Where the failure originated: service name, 'database', 'network', 'infrastructure', 'configuration', or other. NOT the most visible victim, but the true source of the failure."
         },
         "component": {
           "type": "string",
-          "description": "Specific component within the service (e.g. database connection pool, HTTP handler, queue consumer)"
+          "description": "Specific component within the failure domain (e.g., database connection pool, HTTP handler, queue consumer, network packet loss, Kubernetes scheduler)"
         },
         "failure_type": {
           "type": "string",
@@ -228,10 +228,17 @@
             "configuration_error",
             "code_bug",
             "network_issue",
+            "network_latency",
+            "network_partition",
+            "database_timeout",
+            "database_connection_pool_exhausted",
+            "infrastructure_throttling",
+            "infrastructure_crash",
             "data_corruption",
             "overload",
             "timeout",
             "security_event",
+            "instrumentation_gap",
             "unknown"
           ]
         },
