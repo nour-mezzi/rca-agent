@@ -5,15 +5,27 @@ from datetime import datetime, timezone
 from pathlib import Path
 from mistralai.client.sdk import Mistral
 from dotenv import load_dotenv
+import jsonschema
 
 from .log_agent import LogAgent, load_logs, format_logs
 from .trace_agent import TraceAgent, load_traces, format_traces
 from .metrics_agent import MetricsAgent, load_metrics, format_metrics
+from .reasoning_config import REASONING_PHASES, get_all_reasoning_prompts, LATENCY_ANALYSIS_PROTOCOL, CPU_MEMORY_ANALYSIS_PROTOCOL
 
 load_dotenv()
 
 _MODEL = "mistral-large-latest"
 _MAX_TOOL_ROUNDS = 5
+
+# Load JSON schema for RCA output validation
+_SCHEMA_PATH = Path(__file__).parent / "rca_schema.json"
+try:
+    with open(_SCHEMA_PATH) as f:
+        _RCA_SCHEMA = json.load(f)
+    print(f"[Schema] Loaded RCA schema from {_SCHEMA_PATH}")
+except FileNotFoundError:
+    print(f"[Schema] Warning: rca_schema.json not found at {_SCHEMA_PATH}")
+    _RCA_SCHEMA = None
 
 _TOOLS = [
     {
@@ -116,6 +128,56 @@ REASONING RULES:
 - CROSS-SIGNAL CONTRADICTION: If metrics show 0 req/s for a service but traces contain spans for it within the anomaly window, the metric has an instrumentation gap — the service WAS handling traffic. State the discrepancy explicitly. Never call a service "idle" when traces contradict this.
 - Before concluding any service received no traffic, check trace data for spans. If found, investigate with ask_trace_agent or ask_metrics_agent before proceeding.
 
+CHAIN-OF-THOUGHT REASONING:
+Before proposing a root cause, work through these phases explicitly:
+
+PHASE 1 - SYMPTOM EXTRACTION:
+  List all anomalies you observe in logs/metrics/traces. Do not interpret yet.
+  For each: WHAT (exact anomaly), WHERE (service), WHEN (UTC time), MAGNITUDE.
+
+PHASE 2 - SIGNAL MAPPING:
+  For each symptom, identify which RAW DATA signals support it (logs/metrics/traces).
+  Count independent signals per symptom.
+
+PHASE 3 - HYPOTHESIS GENERATION:
+  Generate ≥3 different root cause hypotheses that could explain the signals.
+  For each, state: root cause, mechanism, expected signals, actual signals match?
+
+PHASE 4 - HYPOTHESIS REFINEMENT:
+  For each remaining hypothesis, answer:
+    (a) Is this localized or distributed?
+    (b) Does evidence show CAUSE or EFFECT?
+    (c) What would disconfirm this hypothesis?
+    (d) Is there temporal coherence with minimal gaps?
+
+PHASE 5 - CROSS-SIGNAL VALIDATION:
+  For your TOP hypothesis, check LOGS, METRICS, TRACES for confirmation.
+  Identify any contradictions (e.g., metrics show 0 req/s but traces show spans = instrumentation gap).
+  Count how many independent signals confirm this hypothesis.
+
+PHASE 6 - CAUSAL CHAIN CONSTRUCTION:
+  Build step-by-step chain from root cause to final symptom.
+  Each step must have: time (UTC), service, event (factual), mechanism, evidence (verbatim).
+  Verify the chain explains ALL anomalies from Phase 1.
+
+PHASE 7 - CONFIDENCE CALIBRATION:
+  Confirmed ← ≥2 independent signals + every causal step evidenced + alternatives ruled out
+  Hypothesis ← Only 1 signal OR some steps inferred OR evidence ambiguous
+  Be honest: if evidence is insufficient, use Hypothesis.
+
+SPECIAL ANALYSIS PROTOCOLS:
+When anomaly involves latency:
+  (1) Check distribution (p50 vs p99)
+  (2) Check cross-service uniformity
+  (3) Check resource correlation (CPU/memory)
+  (4) Map dependency chain in traces
+
+When anomaly involves CPU/memory spike:
+  (1) Is spike at 100% (hard limit) or transient?
+  (2) Correlate with error rates at same time?
+  (3) Is threshold context clear?
+  (4) Do traces show failures or successful requests?
+
 OUTPUT FORMAT — respond with a single valid JSON object. No text outside the JSON. No markdown fences. In string values use \\n for newlines — never embed literal newline or tab characters inside a JSON string value.
 
 {
@@ -199,6 +261,43 @@ def _parse_json_response(raw: str) -> dict:
             return json.loads(_sanitize_json_strings(text))
         except json.JSONDecodeError:
             return {"raw_analysis": raw, "parse_error": "Model did not return valid JSON"}
+
+
+def _validate_rca_against_schema(rca: dict) -> tuple[bool, list[str]]:
+    """
+    Validate RCA output against schema.
+    Returns: (is_valid: bool, errors: list of error messages)
+    """
+    if _RCA_SCHEMA is None:
+        return True, []  # Skip validation if schema not loaded
+    
+    errors = []
+    try:
+        jsonschema.validate(instance=rca, schema=_RCA_SCHEMA)
+        return True, []
+    except jsonschema.ValidationError as e:
+        errors.append(f"Schema validation failed: {e.message}")
+        errors.append(f"  Path: {'.'.join(str(p) for p in e.path)}")
+        return False, errors
+    except jsonschema.SchemaError as e:
+        errors.append(f"Schema definition error: {e.message}")
+        return False, errors
+
+
+def _enrich_rca_with_metadata(rca: dict, reasoning_checkpoints: dict) -> dict:
+    """
+    Enrich RCA with reasoning metadata and telemetry.
+    Adds timestamps and reasoning phase tracking.
+    """
+    if "metadata" not in rca:
+        rca["metadata"] = {}
+    
+    rca["metadata"]["generated_at"] = datetime.now(tz=timezone.utc).isoformat()
+    rca["metadata"]["reasoning_phases_completed"] = reasoning_checkpoints.get("phases_completed", [])
+    rca["metadata"]["confidence_rationale"] = reasoning_checkpoints.get("confidence_rationale", "")
+    rca["metadata"]["alternatives_considered"] = reasoning_checkpoints.get("alternatives_considered", [])
+    
+    return rca
 
 
 def _chat_orchestrator(client: Mistral, messages: list, tools: list) -> object:
@@ -316,7 +415,44 @@ Cross-check the specialist reports against the raw data. Use the investigation t
             {"role": "user", "content": user_message},
         ]
 
-        # --- Step 3: tool-calling investigation loop ---
+        # --- Step 3: Inject CoT reasoning checkpoint BEFORE tool calls ---
+        print("[RCA] Injecting Chain-of-Thought reasoning guidance...")
+        messages.append({
+            "role": "user",
+            "content": """Before proceeding to investigate with tools, work through the initial reasoning phases:
+
+PHASE 1 - SYMPTOM EXTRACTION:
+List all anomalies you observe in the raw data. For each: WHAT, WHERE, WHEN, MAGNITUDE.
+
+PHASE 2 - SIGNAL MAPPING:
+For each symptom, identify which signals support it (logs/metrics/traces).
+
+PHASE 3 - HYPOTHESIS GENERATION:
+Generate ≥3 different possible root causes that fit the observed signals.
+
+PHASE 4 - HYPOTHESIS REFINEMENT:
+For each hypothesis, answer: (a) localized or distributed? (b) cause or effect? (c) what would disconfirm it?
+
+Briefly share your analysis from these phases, then ask follow-up questions via tools to resolve ambiguities."""
+        })
+
+        # Get initial reasoning
+        reasoning_response = _chat_orchestrator(self.client, messages, [])
+        initial_reasoning = reasoning_response.choices[0].message.content
+        print("[RCA] Initial reasoning checkpoint complete")
+        
+        messages.append({
+            "role": "assistant",
+            "content": initial_reasoning
+        })
+
+        # --- Step 4: tool-calling investigation loop ---
+        reasoning_checkpoints = {
+            "phases_completed": [1, 2, 3, 4],  # CoT phases
+            "confidence_rationale": "",
+            "alternatives_considered": []
+        }
+        
         analysis = ""
         for round_num in range(_MAX_TOOL_ROUNDS + 1):
             response = _chat_orchestrator(self.client, messages, _TOOLS)
@@ -348,18 +484,52 @@ Cross-check the specialist reports against the raw data. Use the investigation t
                 print("[RCA] Max investigation rounds reached. Generating final report...")
                 messages.append({
                     "role": "user",
-                    "content": "Produce your final RCA report now, based on all information gathered.",
+                    "content": """Produce your final RCA report now. Before finalizing, complete these final reasoning phases:
+
+PHASE 5 - CROSS-SIGNAL VALIDATION:
+Verify your top hypothesis against all signals (logs, metrics, traces).
+
+PHASE 6 - CAUSAL CHAIN CONSTRUCTION:
+Build the evidence-backed causal chain from root cause to symptom.
+Each step must have: time, service, event, and verbatim evidence.
+
+PHASE 7 - CONFIDENCE CALIBRATION:
+Determine Confirmed (≥2 signals + all steps evidenced) or Hypothesis (1 signal or inferred steps).
+
+Then respond with the final JSON RCA."""
                 })
+                reasoning_checkpoints["phases_completed"] = [1, 2, 3, 4, 5, 6, 7]
                 final = _chat_orchestrator(self.client, messages, [])
                 analysis = final.choices[0].message.content
                 break
 
-        # --- Step 4: save result ---
+        # --- Step 5: Parse and validate result ---
         rca = _parse_json_response(analysis)
+        
+        # Validate against schema
+        if _RCA_SCHEMA:
+            is_valid, errors = _validate_rca_against_schema(rca)
+            if is_valid:
+                print("[RCA] ✓ Output validated against schema")
+            else:
+                print("[RCA] ⚠ Schema validation warnings:")
+                for error in errors:
+                    print(f"  {error}")
+                # Don't fail, but record issues
+                if "metadata" not in rca:
+                    rca["metadata"] = {}
+                rca["metadata"]["validation_warnings"] = errors
+        
+        # Enrich with reasoning metadata
+        rca = _enrich_rca_with_metadata(rca, reasoning_checkpoints)
+        
+        # Save result
         timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         output_file = base / f"rca-analysis-{timestamp}.json"
         output_file.write_text(json.dumps(rca, indent=2))
         print(f"[RCA] Analysis saved to: {output_file}")
+        print(f"[RCA] Confidence: {rca.get('root_cause', {}).get('confidence', 'unknown')}")
+        
         return rca
 
 
