@@ -1,0 +1,86 @@
+{
+  "anomaly_id": "001",
+  "window_utc": {
+    "start": "2026-05-06T17:54:13Z",
+    "end": "2026-05-06T18:51:49Z"
+  },
+  "affected_services": [
+    {
+      "service": "catalogue",
+      "anomaly_type": "latency",
+      "details": "HTTP response latency spike: min=0.00475s, avg=0.00605s, max=0.13941s (23\u00d7avg) at 18:10:43 UTC. No dedicated 5xx errors reported (instrumentation gap).",
+      "peak_time_utc": "18:10:43"
+    },
+    {
+      "service": "frontend",
+      "anomaly_type": "error_rate",
+      "details": "HTTP 5xx error rate spike: min=0.0, avg=0.11839, max=0.80431 errors/s (6.8\u00d7avg) at 18:15:28 UTC. HTTP 404 spike: max=0.87133 req/s (8\u00d7avg) at 18:13:13 UTC.",
+      "peak_time_utc": "18:15:28"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU usage spike: min=0.00078, avg=0.01448, max=0.06741 cores/s (4.7\u00d7avg) at 18:13:43 UTC. No latency spike in traces (max=143ms).",
+      "peak_time_utc": "18:13:43"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "no_data",
+      "details": "No HTTP traffic observed (request rate=0.0 req/s). CPU spike: max=0.02463 cores/s (5.4\u00d7avg) at 18:06:13 UTC, but no latency/error data due to zero requests.",
+      "peak_time_utc": null
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "no_data",
+      "details": "No HTTP traffic observed (request rate=0.0 req/s). No latency/error data due to zero requests.",
+      "peak_time_utc": null
+    },
+    {
+      "service": "user",
+      "anomaly_type": "latency",
+      "details": "HTTP response latency spike: min=0.00475s, avg=0.00601s, max=0.03021s (5\u00d7avg) at 18:11:58 UTC.",
+      "peak_time_utc": "18:11:58"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "summary": "Database bottleneck in `catalogue-db` caused cascading latency and errors in `frontend` and `catalogue` services.",
+    "description": "1. **Primary Trigger**: `catalogue-db` CPU spike (3.1\u00d7avg, peak=0.00392 cores/s at 18:11:13 UTC) correlated with `catalogue` service latency spike (23\u00d7avg, max=0.13941s at 18:10:43 UTC).\n2. **Cascading Impact**: `frontend` service experienced 5xx errors (6.8\u00d7avg, max=0.80431 errors/s at 18:15:28 UTC) and 404 spikes (8\u00d7avg, max=0.87133 req/s at 18:13:13 UTC) due to downstream `catalogue` timeouts.\n3. **Secondary Impact**: `carts` CPU spike (4.7\u00d7avg at 18:13:43 UTC) suggests increased load from retries or fallback logic, but no direct latency spike in traces (max=143ms).\n4. **Instrumentation Gaps**: No 5xx errors reported for `catalogue` in dedicated metrics, and no latency/error data for `orders`/`shipping` due to zero traffic."
+  },
+  "evidence": [
+    {
+      "signal": "metrics",
+      "description": "`catalogue-db` CPU spike: max=0.00392 cores/s (3.1\u00d7avg) at 18:11:13 UTC ([04-container_cpu])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`catalogue` latency spike: max=0.13941s (23\u00d7avg) at 18:10:43 UTC ([02-http_response_times])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`frontend` 5xx errors: max=0.80431 errors/s (6.8\u00d7avg) at 18:15:28 UTC ([06-http_errors])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`frontend` 404 spike: max=0.87133 req/s (8\u00d7avg) at 18:13:13 UTC ([01-http_requests_rate])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`carts` CPU spike: max=0.06741 cores/s (4.7\u00d7avg) at 18:13:43 UTC ([04-container_cpu])."
+    },
+    {
+      "signal": "traces",
+      "description": "`carts` max latency: 143ms (no timestamp alignment with CPU spike; [tempo-traces])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`orders` and `shipping` request rate: 0.0 req/s (no traffic; [01-http_requests_rate])."
+    }
+  ],
+  "impact": "End-users experienced failed or slow checkout flows, product catalogue lookups, and account management due to cascading timeouts from `catalogue` to `frontend`. `orders` and `shipping` were unaffected due to zero traffic.",
+  "suggested_fix": [
+    "1. **Immediate**: Optimize `catalogue-db` queries (add indexes, analyze slow queries) and scale database resources to handle load spikes.",
+    "2. **Short-term**: Implement circuit breakers in `frontend` for `catalogue` service calls to prevent cascading failures.",
+    "3. **Long-term**: Address instrumentation gaps for `catalogue` 5xx errors and `orders`/`shipping` latency metrics to improve observability."
+  ]
+}

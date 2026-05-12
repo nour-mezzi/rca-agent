@@ -1,0 +1,65 @@
+{
+  "anomaly_id": "ANOMALY-007",
+  "window_utc": {
+    "start": "2026-05-07T15:41:39Z",
+    "end": "2026-05-07T16:41:43Z"
+  },
+  "affected_services": [
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "Service was unreachable for metrics scraping (up=0) at 15:41:39 UTC. HTTP 5xx error rate spiked to 2.91942 errors/s (3.7\u00d7 avg) at 15:59:09 UTC. Memory usage peaked at 507.6MB at 16:20:54 UTC. CPU usage spiked to 0.0264 cores (4.0\u00d7 avg) at 16:15:24 UTC. Network RX/TX spiked to 2.5KB/s and 15.8KB/s (4.8\u00d7 avg) at 16:03:54 UTC.",
+      "peak_time_utc": "15:41:39"
+    },
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "2,236 DNS resolution errors (e.g., 'dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout') between 16:06:24 UTC and 16:25:32 UTC. Network RX/TX spiked to 17.6KB/s and 17.9KB/s (5.1\u00d7 and 5.4\u00d7 avg) at 16:03:54 UTC.",
+      "peak_time_utc": "16:24:07"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "latency",
+      "details": "Max trace latency of 359ms (avg=10.6ms) during the anomaly window. CPU throttling spike of 0.0651 (12.4\u00d7 avg) at 15:59:54 UTC.",
+      "peak_time_utc": "15:59:54"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "latency",
+      "details": "Max trace latency of 217ms (avg=7.0ms) during the anomaly window. CPU throttling spike of 0.06765 (26.6\u00d7 avg) at 15:46:39 UTC.",
+      "peak_time_utc": "15:46:39"
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "latency",
+      "details": "CPU throttling spike of 0.0878 (64.5\u00d7 avg) at 15:43:09 UTC.",
+      "peak_time_utc": "15:43:09"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "summary": "DNS resolution failures in `edge-router` caused by `front-end` service unavailability due to startup failures and dependency issues.",
+    "description": "1. The `front-end` service failed to start due to recurring `npm ERR!` failures (\u00d754) and `ECONNREFUSED 172.18.0.3:80` errors (\u00d7413), indicating dependency or filesystem issues. This is confirmed by the `up=0` metric at 15:41:39 UTC, proving the service was unreachable.\n\n2. The `edge-router` service attempted to forward requests to `front-end` but encountered DNS resolution timeouts (2,236 errors between 16:06:24 UTC and 16:25:32 UTC). These errors are a direct consequence of the `front-end` service being unavailable, as the DNS resolver could not resolve the `front-end` hostname.\n\n3. The `front-end` service's instability caused a cascade of HTTP 5xx errors (spiking to 2.91942 errors/s at 15:59:09 UTC) and resource spikes (CPU, memory, and network), further degrading its availability.\n\n4. The `carts`, `orders`, and `shipping` services exhibited latency and CPU throttling spikes, but these are secondary effects of the `front-end` service's failure, likely due to retries or degraded downstream dependencies."
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "2,236 DNS resolution errors in `edge-router` (e.g., 'dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout') between 16:06:24 UTC and 16:25:32 UTC. 413 `ECONNREFUSED 172.18.0.3:80` errors and 54 `npm ERR!` failures in `front-end` logs."
+    },
+    {
+      "signal": "metrics",
+      "description": "`front-end` service `up=0` at 15:41:39 UTC, confirming unavailability. HTTP 5xx error rate spiked to 2.91942 errors/s (3.7\u00d7 avg) at 15:59:09 UTC. CPU usage spiked to 0.0264 cores (4.0\u00d7 avg) at 16:15:24 UTC. Memory usage peaked at 507.6MB at 16:20:54 UTC."
+    },
+    {
+      "signal": "traces",
+      "description": "No traces exist for the `front-end` service during the anomaly window, confirming either unavailability or a tracing instrumentation gap. `carts` and `orders` services showed elevated latencies (359ms and 217ms max, respectively)."
+    }
+  ],
+  "impact": "End-users experienced failed requests or timeouts when accessing the application, as the `front-end` service was unavailable or returning HTTP 5xx errors. The `edge-router` DNS failures further disrupted request routing, amplifying the outage.",
+  "suggested_fix": [
+    "1. **Fix `front-end` service startup issues**: Investigate the `npm ERR!` failures and `ECONNREFUSED` errors by checking dependencies, filesystem permissions, and the health of the target service at `172.18.0.3:80`. Ensure the service can start successfully and bind to its required ports.",
+    "2. **Validate DNS configuration**: Ensure the `front-end` hostname resolves correctly in the `edge-router`'s DNS resolver (e.g., CoreDNS). Update the service name or DNS configuration if misconfigured.",
+    "3. **Improve `front-end` resilience**: Implement retry mechanisms for downstream dependencies and add health checks to prevent cascading failures. Monitor resource usage (CPU, memory) to avoid exhaustion.",
+    "4. **Investigate `carts`, `orders`, and `shipping` latency**: Profile these services to identify the root cause of latency spikes and CPU throttling, particularly during periods of high load or retries."
+  ]
+}

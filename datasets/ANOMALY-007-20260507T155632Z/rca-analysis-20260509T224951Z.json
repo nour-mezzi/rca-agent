@@ -1,0 +1,3 @@
+{
+  "question": "Do the distributed traces show any spans for the `front-end` service during the anomaly window? This is critical to determine if the service was handling traffic despite metrics showing near-zero request rates."
+}

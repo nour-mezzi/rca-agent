@@ -1,0 +1,66 @@
+{
+  "anomaly_id": "ANOMALY-004",
+  "window_utc": {
+    "start": "2026-05-07T16:13:21Z",
+    "end": "2026-05-07T17:13:25Z"
+  },
+  "affected_services": [
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "HTTP 5xx error rate spiked to 3.02752 req/s (peak at 16:53:06 UTC). HTTP 4xx error rate (404) peaked at 0.925 req/s (16:31:51 UTC). HTTP response latency spiked to 0.036s (4.0\u00d7 avg, peak at 16:57:06 UTC). Service health metric (up) dropped to 0.0 (min) with avg=0.706, indicating intermittent availability. Memory usage spiked to 507.6MB (1.6\u00d7 avg, peak at 16:20:51 UTC).",
+      "peak_time_utc": "16:18:28Z"
+    },
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "2930 DNS lookup timeouts for 'front-end:8079' (e.g., 'dial tcp: lookup front-end on 127.0.0.11:53: i/o timeout'). Errors occurred in bursts of 38-45 between 16:18:28 UTC and 16:55:36 UTC.",
+      "peak_time_utc": "16:24:07Z"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "latency",
+      "details": "Max latency spiked to 908ms (traceID: ea32b88d7d3e18d4c82193dff9da3263, GET /metrics at 16:59:06 UTC). CPU usage spiked to 0.01985 cores/s (4.6\u00d7 avg, peak at 16:59:06 UTC). CPU throttling spiked to 0.21594 (22.8\u00d7 avg, peak at 16:59:06 UTC).",
+      "peak_time_utc": "16:59:06Z"
+    },
+    {
+      "service": "tempo",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU usage spiked to 0.93588 cores/s (29.5\u00d7 avg, peak at 16:28:21 UTC). GC rate spiked to 4.40936 (40.7\u00d7 avg, peak at 16:28:21 UTC). Memory usage spiked to 382.2MB (1.5\u00d7 avg, peak at 16:42:36 UTC).",
+      "peak_time_utc": "16:28:21Z"
+    },
+    {
+      "service": "loki",
+      "anomaly_type": "network_spike",
+      "details": "Network RX spiked to 14.4KB/s (19.0\u00d7 avg, peak at 16:28:21 UTC). Network TX spiked to 12.5KB/s (45.8\u00d7 avg, peak at 16:28:06 UTC). Memory usage spiked to 161.0MB (1.2\u00d7 avg, peak at 16:29:36 UTC).",
+      "peak_time_utc": "16:28:21Z"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "summary": "Front-end service startup failure due to filesystem misconfiguration caused cascading DNS resolution failures and unavailability.",
+    "description": "1. **Front-end service failed to start** due to a read-only filesystem (`rofs`) and symlink errors, as evidenced by 75 NPM startup failures (e.g., `npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script` and `rofs that don't support symlinks`). This caused the service to crash repeatedly, making it unavailable for DNS resolution.\n\n2. **Edge-router DNS resolution failures**: The edge-router logged 2930 DNS lookup timeouts for `front-end:8079` (e.g., `dial tcp: lookup front-end on 127.0.0.11:53: i/o timeout`) between 16:18:28 UTC and 16:55:36 UTC. These failures directly correlate with the front-end service's unavailability, as the service was not running to respond to DNS queries.\n\n3. **Cascading impact**: The front-end unavailability led to HTTP 5xx errors (3.02752 req/s at 16:53:06 UTC) and latency spikes (0.036s at 16:57:06 UTC) for dependent services. The `up` metric for the front-end service dropped to 0.0, confirming its unreachability.\n\n4. **Secondary impact**: The `orders` service experienced latency spikes (908ms for `GET /metrics`) and CPU throttling (0.21594 at 16:59:06 UTC), likely due to retries or timeouts from failed frontend calls. Tempo and Loki exhibited resource spikes (CPU, memory, network) due to increased logging and tracing activity during the outage."
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "Front-end service logs: 75 occurrences of `npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script` and `rofs that don't support symlinks` (e.g., `2026-05-07T16:18:28Z`). Edge-router logs: 2930 DNS lookup timeouts for `front-end:8079` (e.g., `dial tcp: lookup front-end on 127.0.0.11:53: i/o timeout` at `2026-05-07T16:24:07Z`)."
+    },
+    {
+      "signal": "metrics",
+      "description": "Front-end service health: `up` metric dropped to min=0.0, avg=0.706 (05-service_health). HTTP 5xx error rate: 3.02752 req/s at 16:53:06 UTC (06-http_errors). HTTP response latency: 0.036s at 16:57:06 UTC (02-http_response_times). Memory usage: 507.6MB at 16:20:51 UTC (03-container_memory)."
+    },
+    {
+      "signal": "traces",
+      "description": "Orders service trace: `GET /metrics` latency spiked to 908ms (traceID: ea32b88d7d3e18d4c82193dff9da3263). No traces exist for the front-end service during the anomaly window, confirming its unavailability."
+    }
+  ],
+  "impact": "End-users experienced complete unavailability of the front-end service, resulting in failed requests, 5xx errors, and degraded performance for dependent services (e.g., orders, edge-router). The DNS resolution failures prevented traffic from being routed to the front-end, amplifying the outage.",
+  "suggested_fix": [
+    "1. **Fix front-end filesystem configuration**: Ensure the front-end container has a writable filesystem (e.g., mount a writable volume for `node_modules` and temporary files). Validate symlink support in the container environment.",
+    "2. **Validate DNS resolution**: Update Docker network settings to ensure `front-end` is resolvable. Test DNS resolution manually from the edge-router container (`nslookup front-end`).",
+    "3. **Implement health checks and retries**: Add liveness/readiness probes for the front-end service to prevent traffic routing to unhealthy instances. Configure retries with backoff for DNS resolution in the edge-router.",
+    "4. **Monitor startup dependencies**: Ensure all front-end dependencies (e.g., databases, APIs) are available before starting the service. Add dependency checks in the startup script.",
+    "5. **Scale Tempo/Loki resources**: Increase CPU/memory limits for Tempo and Loki to handle spikes in logging and tracing during outages."
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "anomaly_id": "ANOMALY-007",
+  "window_utc": {
+    "start": "2026-05-07T15:41:39Z",
+    "end": "2026-05-07T16:41:43Z"
+  },
+  "affected_services": [
+    {
+      "service": "front-end",
+      "anomaly_type": "error_rate|latency|unavailable",
+      "details": [
+        "HTTP 5xx error rate: min=0.0, avg=0.79886, max=2.91942 errors/s (peak at 15:59:09 UTC) *** SPIKE (3.7\u00d7avg) ***",
+        "`up` metric: min=0.0, avg=0.746, max=1.0 (intermittent unavailability for metrics scraping)",
+        "Container memory: max=507596800 bytes (507.6MB) at 16:20:54 UTC (50% higher than avg=228.8MB)",
+        "Container CPU: max=0.0264 cores at 16:15:24 UTC *** SPIKE (4.0\u00d7avg) ***"
+      ],
+      "peak_time_utc": "15:59:09"
+    },
+    {
+      "service": "edge-router",
+      "anomaly_type": "dns_failure",
+      "details": [
+        "DNS lookup timeouts for `front-end`: 2236 errors (e.g., `dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:59534->127.0.0.11:53: i/o timeout` at 16:24:07 UTC \u00d745)"
+      ],
+      "peak_time_utc": "16:24:07"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "cpu_throttling",
+      "details": [
+        "CPU throttling: max=0.0651 at 15:59:54 UTC *** SPIKE (12.4\u00d7avg) ***"
+      ],
+      "peak_time_utc": "15:59:54"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "cpu_throttling",
+      "details": [
+        "CPU throttling: max=0.06765 at 15:46:39 UTC *** SPIKE (26.6\u00d7avg) ***"
+      ],
+      "peak_time_utc": "15:46:39"
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "cpu_throttling",
+      "details": [
+        "CPU throttling: max=0.0878 at 15:43:09 UTC *** SPIKE (64.5\u00d7avg) ***"
+      ],
+      "peak_time_utc": "15:43:09"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "primary_service": "front-end",
+    "failure_mode": "memory_leak|resource_exhaustion",
+    "summary": "The `front-end` service experienced a memory leak and resource exhaustion, leading to intermittent unavailability, 5xx errors, and cascading DNS failures in the `edge-router`.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "15:41:39",
+        "service": "front-end",
+        "event": "Service starts with unstable metrics endpoint (`up` metric fluctuates between 0 and 1).",
+        "evidence": "`__name__=up, instance=front-end:8079, job=frontend: min=0.0, avg=0.746, max=1.0`"
+      },
+      {
+        "step": 2,
+        "time_utc": "15:59:09",
+        "service": "front-end",
+        "event": "HTTP 5xx error rate spikes to 2.91942 errors/s (3.7\u00d7avg), indicating internal failures.",
+        "evidence": "`job=frontend, status_code=500: min=0.0, avg=0.79886, max=2.91942 (peak at 15:59:09 UTC)`"
+      },
+      {
+        "step": 3,
+        "time_utc": "16:05:54",
+        "service": "front-end",
+        "event": "HTTP response latency peaks at 0.01259s, suggesting degraded performance.",
+        "evidence": "`job=frontend: min=0.00475, avg=0.00879, max=0.01259 (peak at 16:05:54 UTC)`"
+      },
+      {
+        "step": 4,
+        "time_utc": "16:15:24",
+        "service": "front-end",
+        "event": "Container CPU usage spikes to 0.0264 cores (4.0\u00d7avg), indicating resource exhaustion.",
+        "evidence": "`container_label_com_docker_compose_service=front-end: min=0.00018, avg=0.00665, max=0.0264 (peak at 16:15:24 UTC)`"
+      },
+      {
+        "step": 5,
+        "time_utc": "16:20:54",
+        "service": "front-end",
+        "event": "Container memory usage peaks at 507.6MB (50% higher than avg=228.8MB), confirming a memory leak.",
+        "evidence": "`container_label_com_docker_compose_service=front-end: min=61591552.0, avg=228840218.74627, max=507596800.0 (peak at 16:20:54 UTC)`"
+      },
+      {
+        "step": 6,
+        "time_utc": "16:24:07",
+        "service": "edge-router",
+        "event": "DNS lookup timeouts for `front-end` begin, as the service becomes intermittently unreachable.",
+        "evidence": "`[ERROR \u00d745] time=\"2026-05-07T16:24:07Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:59534->127.0.0.11:53: i/o timeout\"`"
+      }
+    ],
+    "contributing_factors": [
+      "Insufficient CPU/memory limits for `front-end`, leading to throttling and crashes.",
+      "Lack of circuit breakers or retry policies in `edge-router`, amplifying DNS failures.",
+      "No auto-scaling for `front-end`, preventing recovery from resource exhaustion.",
+      "Instrumentation gaps in `front-end` traces, obscuring visibility into request failures."
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "metrics",
+      "description": "`job=frontend, status_code=500: min=0.0, avg=0.79886, max=2.91942 (peak at 15:59:09 UTC)` (HTTP 5xx errors)"
+    },
+    {
+      "signal": "metrics",
+      "description": "`__name__=up, instance=front-end:8079, job=frontend: min=0.0, avg=0.746, max=1.0` (intermittent unavailability)"
+    },
+    {
+      "signal": "metrics",
+      "description": "`container_label_com_docker_compose_service=front-end: min=61591552.0, avg=228840218.74627, max=507596800.0 (peak at 16:20:54 UTC)` (memory leak)"
+    },
+    {
+      "signal": "logs",
+      "description": "`[ERROR \u00d745] time=\"2026-05-07T16:24:07Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:59534->127.0.0.11:53: i/o timeout\"` (DNS failures in `edge-router`)"
+    },
+    {
+      "signal": "metrics",
+      "description": "`container_label_com_docker_compose_service=front-end: min=0.00018, avg=0.00665, max=0.0264 (peak at 16:15:24 UTC)` (CPU spike)"
+    }
+  ],
+  "impact": "End-users experienced failed or degraded requests when accessing the `front-end` service, including:\n- HTTP 500 errors (3.7\u00d7 spike at 15:59:09 UTC).\n- Intermittent unavailability due to memory leaks and CPU throttling.\n- DNS resolution failures in `edge-router`, preventing routing to `front-end`.\n\nDownstream services (`carts`, `orders`, `shipping`) also experienced CPU throttling, likely due to retries or cascading failures from `front-end` instability."
+}

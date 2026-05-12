@@ -1,0 +1,123 @@
+{
+  "anomaly_id": "001",
+  "window_utc": {
+    "start": "2026-05-06T17:54:13Z",
+    "end": "2026-05-06T18:51:49Z"
+  },
+  "affected_services": [
+    {
+      "service": "catalogue",
+      "anomaly_type": "latency",
+      "details": "job=catalogue: min=0.00475s, avg=0.00605s, max=0.13941s (peak at 18:10:43 UTC, 104 pts) *** SPIKE (23.0\u00d7avg) ***",
+      "peak_time_utc": "18:10:43"
+    },
+    {
+      "service": "frontend",
+      "anomaly_type": "error_rate",
+      "details": "job=frontend, status_code=500: min=0.0, avg=0.11839, max=0.80431 errors/s (peak at 18:15:28 UTC, 143 pts) *** SPIKE (6.8\u00d7avg) ***\njob=frontend, status_code=404: min=0.0, avg=0.10833, max=0.87133 (peak at 18:13:13 UTC, 152 pts) *** SPIKE (8.0\u00d7avg) ***",
+      "peak_time_utc": "18:15:28"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "no_data",
+      "details": "02-http_response_times: NO DATA \u2014 all 254 points are NaN/missing\n07-java_http_2xx_health: min=0.0, avg=0.0, max=0.0 (peak at 18:05:58 UTC, 127 pts)",
+      "peak_time_utc": null
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "no_data",
+      "details": "02-http_response_times: NO DATA \u2014 all 142 points are NaN/missing\n07-java_http_2xx_health: min=0.0, avg=0.0, max=0.0 (peak at 17:54:13 UTC, 71 pts)",
+      "peak_time_utc": null
+    },
+    {
+      "service": "user",
+      "anomaly_type": "latency",
+      "details": "job=user: min=0.00475s, avg=0.00601s, max=0.03021s (peak at 18:11:58 UTC, 90 pts) *** SPIKE (5.0\u00d7avg) ***",
+      "peak_time_utc": "18:11:58"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "cpu_spike",
+      "details": "container_label_com_docker_compose_service=carts: min=0.00078 cores/s, avg=0.01448 cores/s, max=0.06741 cores/s (peak at 18:13:43 UTC, 174 pts) *** SPIKE (4.7\u00d7avg) ***",
+      "peak_time_utc": "18:13:43"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "cpu_spike",
+      "details": "container_label_com_docker_compose_service=orders: min=0.00073 cores/s, avg=0.00455 cores/s, max=0.02463 cores/s (peak at 18:06:13 UTC, 174 pts) *** SPIKE (5.4\u00d7avg) ***",
+      "peak_time_utc": "18:06:13"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "primary_service": "orders",
+    "failure_mode": "dependency_unavailable",
+    "summary": "The orders service became unavailable due to missing instrumentation and zero successful HTTP responses, causing cascading 5xx errors in the frontend service.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "18:05:58",
+        "service": "orders",
+        "event": "No successful HTTP 2xx responses observed, indicating service unavailability or failure to process requests.",
+        "evidence": "07-java_http_2xx_health: job=orders: min=0.0, avg=0.0, max=0.0 (peak at 18:05:58 UTC, 127 pts)"
+      },
+      {
+        "step": 2,
+        "time_utc": "18:10:43",
+        "service": "catalogue",
+        "event": "Extreme latency spike (23\u00d7 avg) observed, likely due to dependency on the unavailable orders service.",
+        "evidence": "02-http_response_times: job=catalogue: max=0.13941s (peak at 18:10:43 UTC, 104 pts) *** SPIKE (23.0\u00d7avg) ***"
+      },
+      {
+        "step": 3,
+        "time_utc": "18:13:13",
+        "service": "frontend",
+        "event": "Spike in 404 errors (8\u00d7 avg) observed, indicating failed requests to downstream services, including orders.",
+        "evidence": "01-http_requests_rate: job=frontend, status_code=404: max=0.87133 (peak at 18:13:13 UTC, 152 pts) *** SPIKE (8.0\u00d7avg) ***"
+      },
+      {
+        "step": 4,
+        "time_utc": "18:15:28",
+        "service": "frontend",
+        "event": "Spike in 5xx errors (6.8\u00d7 avg) observed, directly caused by dependency failures (orders service unavailability).",
+        "evidence": "06-http_errors: job=frontend, status_code=500: max=0.80431 errors/s (peak at 18:15:28 UTC, 143 pts) *** SPIKE (6.8\u00d7avg) ***"
+      }
+    ],
+    "contributing_factors": [
+      "Missing instrumentation for orders and shipping services (02-http_response_times: NO DATA), obscuring visibility into their health.",
+      "No logs or traces available for orders and shipping services during the anomaly window, preventing direct confirmation of failure modes.",
+      "High latency in the catalogue service (23\u00d7 avg) exacerbated frontend errors by increasing request timeouts."
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "metrics",
+      "description": "07-java_http_2xx_health: job=orders: min=0.0, avg=0.0, max=0.0 (peak at 18:05:58 UTC, 127 pts)"
+    },
+    {
+      "signal": "metrics",
+      "description": "02-http_response_times: job=orders: NO DATA \u2014 all 254 points are NaN/missing"
+    },
+    {
+      "signal": "metrics",
+      "description": "02-http_response_times: job=catalogue: max=0.13941s (peak at 18:10:43 UTC, 104 pts) *** SPIKE (23.0\u00d7avg) ***"
+    },
+    {
+      "signal": "metrics",
+      "description": "01-http_requests_rate: job=frontend, status_code=404: max=0.87133 (peak at 18:13:13 UTC, 152 pts) *** SPIKE (8.0\u00d7avg) ***"
+    },
+    {
+      "signal": "metrics",
+      "description": "06-http_errors: job=frontend, status_code=500: max=0.80431 errors/s (peak at 18:15:28 UTC, 143 pts) *** SPIKE (6.8\u00d7avg) ***"
+    },
+    {
+      "signal": "metrics",
+      "description": "02-http_response_times: job=shipping: NO DATA \u2014 all 142 points are NaN/missing"
+    },
+    {
+      "signal": "metrics",
+      "description": "07-java_http_2xx_health: job=shipping: min=0.0, avg=0.0, max=0.0 (peak at 17:54:13 UTC, 71 pts)"
+    }
+  ],
+  "impact": "End-users experienced failed or degraded functionality when interacting with the frontend service, particularly during checkout or order-related workflows. The unavailability of the orders service caused:\n1. 404 errors for missing resources (e.g., order confirmation pages).\n2. 500 errors for failed requests to downstream services (e.g., order processing).\n3. Increased latency in the catalogue service, further degrading user experience."
+}

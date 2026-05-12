@@ -1,0 +1,90 @@
+{
+  "anomaly_id": "ANOMALY-004",
+  "window_utc": {
+    "start": "2026-05-07T16:13:21Z",
+    "end": "2026-05-07T17:13:25Z"
+  },
+  "affected_services": [
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "Service 'up' metric dropped to 0.0 (min=0.0, avg=0.70647) at 16:14:51 UTC. HTTP 5xx error rate spiked to 3.02752 errors/s (2.0\u00d7avg) at 16:53:06 UTC. HTTP response latency spiked to 0.03638s (4.0\u00d7avg) at 16:57:06 UTC. No successful startup logs; 629 'ECONNREFUSED 172.18.0.3:80' errors and 75 'npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script' errors.",
+      "peak_time_utc": "16:14:51"
+    },
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "2,930 DNS lookup timeouts for 'front-end' (e.g., 'dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:59534->127.0.0.11:53: i/o timeout' at 16:24:07 UTC).",
+      "peak_time_utc": "16:24:07"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "latency",
+      "details": "HTTP latency spiked to 908ms (traceID: ea32b88d7d3e18d4c82193dff9da3263) for GET /metrics at 16:59:06 UTC. CPU throttling spiked to 0.21594 (22.8\u00d7avg) at the same time.",
+      "peak_time_utc": "16:59:06"
+    },
+    {
+      "service": "tempo",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU usage spiked to 0.93588 cores (29.5\u00d7avg) at 16:28:21 UTC. Go GC rate spiked to 4.40936 (40.7\u00d7avg) at the same time.",
+      "peak_time_utc": "16:28:21"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "primary_service": "front-end",
+    "failure_mode": "config_error",
+    "summary": "The front-end service failed to start due to a configuration error (port conflict or missing dependencies), causing DNS resolution failures in edge-router and cascading unavailability.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "16:14:51",
+        "service": "front-end",
+        "event": "Service 'up' metric dropped to 0, indicating the service failed to start. No successful startup logs were recorded.",
+        "evidence": "__name__=up, instance=front-end:8079, job=frontend: min=0.0, avg=0.70647, max=1.0 (peak at 16:14:51 UTC, 201 pts)"
+      },
+      {
+        "step": 2,
+        "time_utc": "16:18:28",
+        "service": "front-end",
+        "event": "Repeated 'ECONNREFUSED 172.18.0.3:80' errors and 'npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script' errors confirmed the service never bound to port 80.",
+        "evidence": "[ERROR \u00d7629] Error with log in: Error: connect ECONNREFUSED 172.18.0.3:80\n[ERROR \u00d775] npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script 'node server.js'."
+      },
+      {
+        "step": 3,
+        "time_utc": "16:24:07",
+        "service": "edge-router",
+        "event": "DNS lookup timeouts for 'front-end' began, as the service was unresolvable due to its unavailability.",
+        "evidence": "[ERROR \u00d745] time=\"2026-05-07T16:24:07Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:59534->127.0.0.11:53: i/o timeout\""
+      },
+      {
+        "step": 4,
+        "time_utc": "16:53:06",
+        "service": "front-end",
+        "event": "HTTP 5xx error rate spiked to 3.02752 errors/s as downstream services failed to handle the unavailability of front-end.",
+        "evidence": "job=frontend, status_code=500: min=0.0, avg=1.51876, max=3.02752 (peak at 16:53:06 UTC, 106 pts)"
+      }
+    ],
+    "contributing_factors": [
+      "Port conflict or misconfiguration in front-end (failed to bind to 172.18.0.3:80).",
+      "Missing dependencies or corrupted node_modules (npm startup failures).",
+      "Edge-router DNS resolution failures amplified the outage by preventing traffic routing.",
+      "No traces or metrics for front-end confirmed its unavailability during the anomaly window."
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "[ERROR \u00d7629] Error with log in: Error: connect ECONNREFUSED 172.18.0.3:80 (front-end)\n[ERROR \u00d775] npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script 'node server.js' (front-end)\n[ERROR \u00d745] time=\"2026-05-07T16:24:07Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: i/o timeout\" (edge-router)"
+    },
+    {
+      "signal": "metrics",
+      "description": "__name__=up, instance=front-end:8079, job=frontend: min=0.0, avg=0.70647, max=1.0 (peak at 16:14:51 UTC, 201 pts)\njob=frontend, status_code=500: min=0.0, avg=1.51876, max=3.02752 (peak at 16:53:06 UTC, 106 pts)\njob=frontend: min=0.00475, avg=0.00907, max=0.03638 (peak at 16:57:06 UTC, 100 pts)"
+    },
+    {
+      "signal": "traces",
+      "description": "No traces for 'front-end' during the anomaly window. Slow traces for 'orders' (traceID: ea32b88d7d3e18d4c82193dff9da3263, 908ms) confirm backend latency but no direct link to front-end failures."
+    }
+  ],
+  "impact": "End-users were unable to access the application frontend, resulting in a complete outage of the user interface. Downstream services (e.g., orders, carts) experienced elevated latency due to failed dependencies, but no direct user-facing impact was observed beyond the frontend unavailability."
+}

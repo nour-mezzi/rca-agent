@@ -1,0 +1,79 @@
+{
+  "anomaly_id": "001",
+  "window_utc": {
+    "start": "2026-05-06T17:54:13Z",
+    "end": "2026-05-06T18:51:49Z"
+  },
+  "affected_services": [
+    {
+      "service": "frontend",
+      "anomaly_type": "error_rate",
+      "details": "HTTP 5xx error rate spiked to max=0.80431 errors/s at 18:15:28 UTC (avg=0.28572 errors/s). HTTP 404 errors also spiked to max=0.87133 errors/s at 18:13:13 UTC (3.2\u00d7avg).",
+      "peak_time_utc": "18:15:28"
+    },
+    {
+      "service": "catalogue",
+      "anomaly_type": "latency",
+      "details": "HTTP response latency spiked to max=0.13941s at 18:10:43 UTC (4.4\u00d7avg=0.03172s).",
+      "peak_time_utc": "18:10:43"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "no_data",
+      "details": "No HTTP request traffic (min/avg/max=0.0 req/s in [01-http_requests_rate]) and no HTTP response time data (all NaN in [02-http_response_times]). Zero 2xx success rates in [07-java_http_2xx_health] due to no requests, not failures.",
+      "peak_time_utc": null
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "no_data",
+      "details": "No HTTP request traffic (min/avg/max=0.0 req/s in [01-http_requests_rate]) and no HTTP response time data (all NaN in [02-http_response_times]). Zero 2xx success rates in [07-java_http_2xx_health] due to no requests, not failures.",
+      "peak_time_utc": null
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "summary": "Frontend 5xx errors and catalogue latency spikes were caused by missing backend services ('orders' and 'shipping'), which received no HTTP traffic during the anomaly window.",
+    "description": "1. The 'orders' and 'shipping' services received **zero HTTP requests** during the anomaly window, as confirmed by [01-http_requests_rate] (min/avg/max=0.0 req/s for both). This led to **no HTTP response time data** ([02-http_response_times] = NaN) and **zero 2xx success rates** ([07-java_http_2xx_health] = 0.0), which are expected for idle services.\n\n2. The 'frontend' service experienced **5xx errors (max=0.80431 errors/s at 18:15:28 UTC)** and **404 errors (max=0.87133 errors/s at 18:13:13 UTC)**, likely due to failed calls to the idle 'orders' and 'shipping' services. This is supported by the correlation between the frontend error spikes and the absence of backend traffic.\n\n3. The 'catalogue' service exhibited **high latency (max=0.13941s at 18:10:43 UTC, 4.4\u00d7avg)**, which may be a secondary effect of resource contention or retries from the frontend service attempting to reach unavailable backends."
+  },
+  "evidence": [
+    {
+      "signal": "metrics",
+      "description": "[01-http_requests_rate] for job=orders and job=shipping: min/avg/max=0.0 req/s (no HTTP traffic)."
+    },
+    {
+      "signal": "metrics",
+      "description": "[02-http_response_times] for job=orders and job=shipping: all NaN (no response time data due to no requests)."
+    },
+    {
+      "signal": "metrics",
+      "description": "[07-java_http_2xx_health] for job=orders and job=shipping: min/avg/max=0.0 (zero success rates due to no requests)."
+    },
+    {
+      "signal": "metrics",
+      "description": "[06-http_errors] for job=frontend: 5xx error rate max=0.80431 errors/s at 18:15:28 UTC."
+    },
+    {
+      "signal": "metrics",
+      "description": "[01-http_requests_rate] for job=frontend: 404 error rate max=0.87133 errors/s at 18:13:13 UTC (3.2\u00d7avg)."
+    },
+    {
+      "signal": "metrics",
+      "description": "[02-http_response_times] for job=catalogue: max=0.13941s at 18:10:43 UTC (4.4\u00d7avg)."
+    },
+    {
+      "signal": "logs",
+      "description": "No errors or warnings from 'orders' or 'shipping' services in the provided logs."
+    },
+    {
+      "signal": "traces",
+      "description": "Traces for 'orders' and 'shipping' show low latency (avg=4.1ms and 3.4ms respectively) but do not include HTTP status codes, confirming no evidence of failures in the trace data."
+    }
+  ],
+  "impact": "End users experienced failed or slow requests when attempting to interact with functionalities dependent on the 'orders' or 'shipping' services (e.g., checkout, order tracking, or shipping calculations). The frontend 5xx/404 errors and catalogue latency spikes degraded the user experience for these workflows.",
+  "suggested_fix": [
+    "1. **Restore HTTP traffic to 'orders' and 'shipping' services**: Investigate why these services received no requests during the anomaly window. Check for issues in the request routing layer (e.g., API gateway, service mesh, or load balancer misconfigurations).",
+    "2. **Validate frontend error handling**: Ensure the frontend service gracefully handles unavailable backends (e.g., circuit breakers, retries with backoff, or fallback responses) to prevent cascading 5xx/404 errors.",
+    "3. **Monitor catalogue latency**: Investigate the root cause of the catalogue latency spike (e.g., database queries, external API calls) to prevent secondary performance degradation.",
+    "4. **Improve observability for 'orders' and 'shipping'**: Add HTTP metrics with `status_code` labels and ensure traces include HTTP response codes to distinguish between idle services and genuine failures."
+  ]
+}

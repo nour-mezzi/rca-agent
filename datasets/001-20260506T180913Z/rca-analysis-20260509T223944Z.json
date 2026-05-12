@@ -1,0 +1,94 @@
+{
+  "anomaly_id": "001",
+  "window_utc": {
+    "start": "2026-05-06T17:54:13Z",
+    "end": "2026-05-06T18:51:49Z"
+  },
+  "affected_services": [
+    {
+      "service": "frontend",
+      "anomaly_type": "error_rate",
+      "details": "HTTP 500 errors spiked to 0.80431 req/s (6.8\u00d7 avg) at 18:15:28 UTC. HTTP 404 errors spiked to 0.87133 req/s (8.0\u00d7 avg) at 18:13:13 UTC. Latency peaked at 0.04892s (3.1\u00d7 avg) at 18:13:58 UTC. Memory usage spiked to 139132928 bytes at 18:10:43 UTC.",
+      "peak_time_utc": "18:13:13"
+    },
+    {
+      "service": "catalogue",
+      "anomaly_type": "latency",
+      "details": "HTTP response latency spiked to 0.13941s (23.0\u00d7 avg) at 18:10:43 UTC. CPU usage for catalogue-db spiked to 0.00392 cores (3.1\u00d7 avg) at 18:11:13 UTC.",
+      "peak_time_utc": "18:10:43"
+    },
+    {
+      "service": "user",
+      "anomaly_type": "latency",
+      "details": "HTTP response latency spiked to 0.03021s (5.0\u00d7 avg) at 18:11:58 UTC.",
+      "peak_time_utc": "18:11:58"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "latency_cpu",
+      "details": "HTTP response latency peaked at 0.04375s at 18:14:58 UTC. CPU usage spiked to 0.06741 cores (4.7\u00d7 avg) at 18:13:43 UTC. Traces show max latency of 143ms (no timestamp provided).",
+      "peak_time_utc": "18:13:43"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "no_data",
+      "details": "No HTTP 2xx traffic recorded (0.0 req/s in [01] and [07]). CPU usage spiked to 0.02463 cores (5.4\u00d7 avg) at 18:06:13 UTC. No logs or traces indicate failures, but instrumentation gap confirmed for HTTP errors.",
+      "peak_time_utc": "18:06:13"
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "no_data",
+      "details": "No HTTP 2xx traffic recorded (0.0 req/s in [01] and [07]). No logs or traces indicate failures, but instrumentation gap confirmed for HTTP errors.",
+      "peak_time_utc": null
+    },
+    {
+      "service": "tempo",
+      "anomaly_type": "cpu_memory_spike",
+      "details": "CPU usage spiked to 0.02487 cores (4.2\u00d7 avg) at 18:24:58 UTC. Memory usage spiked to 834732032 bytes at 18:25:43 UTC.",
+      "peak_time_utc": "18:24:58"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "summary": "The `frontend` service experienced a surge in HTTP 404 and 500 errors due to misrouted requests and cascading latency spikes in downstream services (`catalogue`, `user`, and `carts`), leading to resource exhaustion.",
+    "description": "1. **Frontend Errors**: The `frontend` service exhibited HTTP 404 errors (0.87133 req/s, 8.0\u00d7 avg) at 18:13:13 UTC and HTTP 500 errors (0.80431 req/s, 6.8\u00d7 avg) at 18:15:28 UTC. This indicates misrouted requests or broken links (404s) and failures in handling downstream responses (500s).\n\n2. **Downstream Latency**: The `catalogue` service experienced a latency spike (0.13941s, 23.0\u00d7 avg) at 18:10:43 UTC, coinciding with a CPU spike in `catalogue-db` (0.00392 cores, 3.1\u00d7 avg). The `user` service also showed latency spikes (0.03021s, 5.0\u00d7 avg) at 18:11:58 UTC.\n\n3. **Resource Exhaustion**: The `carts` service CPU spiked to 0.06741 cores (4.7\u00d7 avg) at 18:13:43 UTC, correlating with its max trace latency of 143ms. The `frontend` memory spiked to 139132928 bytes at 18:10:43 UTC, likely due to increased request queuing.\n\n4. **Silent Failures**: The `orders` and `shipping` services reported no HTTP 2xx traffic despite being reachable (`up=1`). This is confirmed as an instrumentation gap, as no logs or traces indicate failures, but no error metrics were recorded either.\n\n5. **Causal Chain**: The `frontend` errors triggered retries or queued requests, amplifying latency in downstream services (`catalogue`, `user`, `carts`). Resource exhaustion (CPU/memory) in these services further degraded performance, creating a feedback loop of errors and latency."
+  },
+  "evidence": [
+    {
+      "signal": "metrics",
+      "description": "HTTP 404 errors for `job=frontend` spiked to 0.87133 req/s (8.0\u00d7 avg) at 18:13:13 UTC ([01-http_requests_rate])."
+    },
+    {
+      "signal": "metrics",
+      "description": "HTTP 500 errors for `job=frontend` spiked to 0.80431 req/s (6.8\u00d7 avg) at 18:15:28 UTC ([06-http_errors])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`job=catalogue` latency spiked to 0.13941s (23.0\u00d7 avg) at 18:10:43 UTC ([02-http_response_times])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`container_label_com_docker_compose_service=carts` CPU spiked to 0.06741 cores (4.7\u00d7 avg) at 18:13:43 UTC ([04-container_cpu])."
+    },
+    {
+      "signal": "traces",
+      "description": "`carts` service max trace latency reached 143ms (no timestamp provided) ([tempo-traces])."
+    },
+    {
+      "signal": "metrics",
+      "description": "`job=orders` and `job=shipping` recorded 0 HTTP 2xx traffic ([01], [07]), confirmed as an instrumentation gap ([06-http_errors] missing)."
+    },
+    {
+      "signal": "logs",
+      "description": "No logs indicate failures in `orders` or `shipping` services during the anomaly window."
+    }
+  ],
+  "impact": "End-users experienced failed or slow requests when accessing the frontend, particularly for operations relying on the `catalogue`, `user`, and `carts` services. The 404 and 500 errors suggest broken functionality (e.g., missing resources or failed transactions), while latency spikes degraded performance for all interactions.",
+  "suggested_fix": [
+    "1. **Fix Frontend Routing**: Investigate the root cause of HTTP 404 errors in the `frontend` service (e.g., broken links, misconfigured routes) and validate downstream service endpoints (`catalogue`, `user`, `carts`).",
+    "2. **Scale Downstream Services**: Increase resources (CPU/memory) for `catalogue`, `user`, and `carts` services to handle traffic surges. Investigate `catalogue-db` CPU spikes for query optimization opportunities.",
+    "3. **Address Instrumentation Gaps**: Add HTTP error metrics (4xx/5xx) for `orders` and `shipping` services to ensure visibility into silent failures.",
+    "4. **Implement Circuit Breakers**: Add retry policies and circuit breakers in the `frontend` service to prevent cascading failures during downstream latency spikes.",
+    "5. **Monitor Memory Usage**: Investigate the `frontend` memory spike (139MB) to identify memory leaks or inefficient request handling (e.g., session storage)."
+  ]
+}
