@@ -5,326 +5,199 @@
   "type": "object",
   "required": [
     "anomaly_id",
-    "incident_window",
-    "signal_analysis",
-    "cross_signal_correlation",
-    "hypothesis_ranking",
+    "window_utc",
     "root_cause",
-    "impact",
-    "confidence",
-    "remediation"
+    "evidence",
+    "impact"
   ],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "anomaly_id": {
       "type": "string",
       "description": "Identifier of the anomaly being investigated"
     },
-    "incident_window": {
+    "window_utc": {
       "type": "object",
+      "description": "UTC time window of the anomaly",
       "required": ["start", "end"],
       "additionalProperties": false,
       "properties": {
-        "start": { "type": "string" },
-        "end":   { "type": "string" }
-      }
-    },
-    "signal_analysis": {
-      "type": "object",
-      "description": "Independent analysis of each observability signal",
-      "required": ["logs", "metrics", "traces"],
-      "additionalProperties": false,
-      "properties": {
-        "logs": {
-          "type": "object",
-          "required": ["summary", "affected_services", "key_findings"],
-          "additionalProperties": false,
-          "properties": {
-            "summary": {
-              "type": "string",
-              "description": "One-paragraph overview of what the logs reveal"
-            },
-            "affected_services": {
-              "type": "array",
-              "minItems": 0,
-              "items": {
-                "type": "object",
-                "required": ["service", "error_count", "notable_errors"],
-                "additionalProperties": false,
-                "properties": {
-                  "service":        { "type": "string" },
-                  "error_count":    { "type": "integer", "minimum": 0 },
-                  "notable_errors": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": { "type": "string" },
-                    "description": "Exact log lines that are most significant"
-                  }
-                }
-              }
-            },
-            "key_findings": {
-              "type": "array",
-              "minItems": 1,
-              "items": { "type": "string" },
-              "description": "Bullet points of the most important log-level observations"
-            }
-          }
+        "start": {
+          "type": "string",
+          "description": "ISO 8601 start timestamp (UTC)"
         },
-        "metrics": {
-          "type": "object",
-          "required": ["summary", "anomalous_metrics", "key_findings"],
-          "additionalProperties": false,
-          "properties": {
-            "summary": {
-              "type": "string",
-              "description": "One-paragraph overview of what the metrics reveal"
-            },
-            "anomalous_metrics": {
-              "type": "array",
-              "minItems": 0,
-              "items": {
-                "type": "object",
-                "required": ["metric_name", "affected_labels", "observed_behavior", "significance"],
-                "additionalProperties": false,
-                "properties": {
-                  "metric_name":       { "type": "string" },
-                  "affected_labels":   { "type": "string", "description": "Label set that shows the anomaly, e.g. service=payments, status=500" },
-                  "observed_behavior": { "type": "string", "description": "What the values did — spike, drop, flatline, gradual rise, etc." },
-                  "significance":      { "type": "string", "enum": ["critical", "high", "medium", "low"] }
-                }
-              }
-            },
-            "key_findings": {
-              "type": "array",
-              "minItems": 1,
-              "items": { "type": "string" }
-            }
-          }
-        },
-        "traces": {
-          "type": "object",
-          "required": ["summary", "slow_or_failed_services", "key_findings"],
-          "additionalProperties": false,
-          "properties": {
-            "summary": {
-              "type": "string",
-              "description": "One-paragraph overview of what the traces reveal"
-            },
-            "slow_or_failed_services": {
-              "type": "array",
-              "minItems": 0,
-              "items": {
-                "type": "object",
-                "required": ["service", "operation", "max_latency_ms", "trace_ids"],
-                "additionalProperties": false,
-                "properties": {
-                  "service":        { "type": "string" },
-                  "operation":      { "type": "string" },
-                  "max_latency_ms": { "type": "number", "minimum": 0 },
-                  "trace_ids": {
-                    "type": "array",
-                    "minItems": 1,
-                    "items": { "type": "string" },
-                    "description": "Specific trace IDs that show the anomaly"
-                  }
-                }
-              }
-            },
-            "key_findings": {
-              "type": "array",
-              "minItems": 1,
-              "items": { "type": "string" }
-            }
-          }
+        "end": {
+          "type": "string",
+          "description": "ISO 8601 end timestamp (UTC)"
         }
       }
     },
-    "cross_signal_correlation": {
-      "type": "object",
-      "required": ["timeline", "correlated_services", "causal_chain", "summary"],
-      "additionalProperties": false,
-      "properties": {
-        "timeline": {
-          "type": "array",
-          "description": "Ordered sequence of events observed across all signals",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": ["timestamp_approx", "signal", "event"],
-            "additionalProperties": false,
-            "properties": {
-              "timestamp_approx": { "type": "string" },
-              "signal":           { "type": "string", "enum": ["logs", "metrics", "traces", "multiple"] },
-              "event":            { "type": "string", "description": "What happened at this point in time" }
-            }
-          }
-        },
-        "correlated_services": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type": "string" },
-          "description": "Services that appear anomalous across more than one signal"
-        },
-        "causal_chain": {
-          "type": "string",
-          "description": "Narrative description of how the failure propagated across services and signals"
-        },
-        "summary": {
-          "type": "string",
-          "description": "One or two sentences summarising the cross-signal picture"
-        }
-      }
-    },
-    "hypothesis_ranking": {
+    "affected_services": {
       "type": "array",
-      "description": "Candidate root causes ordered from most to least likely",
-      "minItems": 1,
+      "description": "List of services showing anomalies",
       "items": {
         "type": "object",
-        "required": ["rank", "hypothesis", "confidence", "supporting_evidence", "contradicting_evidence"],
-        "additionalProperties": false,
+        "required": ["service", "anomaly_type"],
         "properties": {
-          "rank":       { "type": "integer", "minimum": 1 },
-          "hypothesis": { "type": "string", "description": "Concise statement of the candidate root cause" },
-          "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
-          "supporting_evidence": {
-            "type": "array",
-            "minItems": 1,
-            "items": { "type": "string" },
-            "description": "Specific observations (log lines, trace IDs, metric spikes) that support this hypothesis"
+          "service": {
+            "type": "string",
+            "description": "Service name"
           },
-          "contradicting_evidence": {
-            "type": "array",
-            "minItems": 0,
-            "items": { "type": "string" },
-            "description": "Observations that weaken this hypothesis, or empty array if none"
+          "anomaly_type": {
+            "type": "string",
+            "description": "Type of anomaly (e.g., latency, error_rate, unavailable, cpu_spike)"
+          },
+          "details": {
+            "type": "string",
+            "description": "Detailed description of the anomaly"
+          },
+          "peak_time_utc": {
+            "type": ["string", "null"],
+            "description": "UTC timestamp of peak anomaly"
           }
         }
       }
     },
     "root_cause": {
       "type": "object",
-      "required": ["statement", "failure_domain", "failure_type", "evidence_citations"],
-      "additionalProperties": false,
+      "description": "Root cause analysis",
+      "required": ["confidence", "failure_domain", "failure_mode", "summary", "causal_chain"],
       "properties": {
-        "statement": {
+        "confidence": {
           "type": "string",
-          "description": "One or two sentence definitive statement of the root cause"
+          "enum": ["Confirmed", "Hypothesis"],
+          "description": "Confidence level based on signal count and evidence quality"
         },
         "failure_domain": {
           "type": "string",
-          "description": "Where the failure originated: service name, 'database', 'network', 'infrastructure', 'configuration', or other. NOT the most visible victim, but the true source of the failure."
+          "description": "Where the failure originated. Can be: service name, database, network, infrastructure, configuration, or other. NOT the most visible victim — the true source."
         },
-        "component": {
+        "failure_mode": {
           "type": "string",
-          "description": "Specific component within the failure domain (e.g., database connection pool, HTTP handler, queue consumer, network packet loss, Kubernetes scheduler)"
-        },
-        "failure_type": {
-          "type": "string",
+          "description": "Type of failure that occurred",
           "enum": [
-            "resource_exhaustion",
-            "dependency_failure",
-            "configuration_error",
-            "code_bug",
-            "network_issue",
+            "crash",
+            "oom",
+            "connection_refused",
+            "dns_failure",
+            "db_timeout",
+            "db_connection_pool_exhausted",
+            "config_error",
+            "dependency_unavailable",
+            "instrumentation_gap",
             "network_latency",
             "network_partition",
-            "database_timeout",
-            "database_connection_pool_exhausted",
+            "resource_exhaustion",
             "infrastructure_throttling",
-            "infrastructure_crash",
-            "data_corruption",
-            "overload",
-            "timeout",
-            "security_event",
-            "instrumentation_gap",
-            "unknown"
+            "dns_misconfiguration",
+            "dns_misconfiguration_and_startup_failure",
+            "other"
           ]
         },
-        "evidence_citations": {
+        "summary": {
+          "type": "string",
+          "description": "One sentence summary of the root cause, naming the failure domain and mode"
+        },
+        "causal_chain": {
           "type": "array",
-          "minItems": 1,
+          "description": "Step-by-step causal chain from root cause to visible symptoms",
           "items": {
             "type": "object",
-            "required": ["signal", "citation"],
-            "additionalProperties": false,
+            "required": ["step", "time_utc", "service", "event", "evidence"],
             "properties": {
-              "signal":   { "type": "string", "enum": ["logs", "metrics", "traces"] },
-              "citation": { "type": "string", "description": "Exact log line, trace ID, or metric name+value that clinches the root cause" }
+              "step": {
+                "type": "integer",
+                "description": "Step number in the chain"
+              },
+              "time_utc": {
+                "type": "string",
+                "description": "UTC timestamp or time window"
+              },
+              "service": {
+                "type": "string",
+                "description": "Service or component involved"
+              },
+              "event": {
+                "type": "string",
+                "description": "What happened at this step"
+              },
+              "mechanism": {
+                "type": "string",
+                "description": "How this step caused the next one"
+              },
+              "evidence": {
+                "type": "string",
+                "description": "Verbatim evidence from logs, metrics, or traces"
+              }
             }
+          }
+        },
+        "contributing_factors": {
+          "type": "array",
+          "description": "Secondary factors that amplified or contributed to the failure",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Evidence citations supporting the root cause",
+      "items": {
+        "type": "object",
+        "required": ["signal", "description"],
+        "properties": {
+          "signal": {
+            "type": "string",
+            "enum": ["logs", "metrics", "traces"],
+            "description": "Source signal type"
+          },
+          "description": {
+            "type": "string",
+            "description": "Citation from the signal (exact log line, metric value, trace ID)"
           }
         }
       }
     },
     "impact": {
-      "type": "object",
-      "required": ["user_facing", "system_level", "severity", "estimated_affected_requests_pct"],
-      "additionalProperties": false,
-      "properties": {
-        "user_facing": {
-          "type": "string",
-          "description": "What end users experienced (errors, slowness, unavailability)"
-        },
-        "system_level": {
-          "type": "string",
-          "description": "What happened internally (queues backed up, memory exhausted, cascading failures, etc.)"
-        },
-        "severity": {
-          "type": "string",
-          "enum": ["critical", "high", "medium", "low"]
-        },
-        "estimated_affected_requests_pct": {
-          "type": ["number", "null"],
-          "minimum": 0,
-          "maximum": 100,
-          "description": "Estimated percentage of requests impacted; null if cannot be determined from available data"
-        }
-      }
+      "type": "string",
+      "description": "Description of the impact on end-user functionality and system behavior"
     },
-    "confidence": {
+    "metadata": {
       "type": "object",
-      "required": ["overall", "justification", "missing_data"],
-      "additionalProperties": false,
+      "description": "Metadata about the analysis process",
       "properties": {
-        "overall": {
+        "generated_at": {
           "type": "string",
-          "enum": ["high", "medium", "low"]
+          "description": "ISO 8601 timestamp when the analysis was generated"
         },
-        "justification": {
+        "reasoning_phases_completed": {
+          "type": "array",
+          "description": "Which CoT phases were completed",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          }
+        },
+        "confidence_rationale": {
           "type": "string",
-          "description": "Why this confidence level was assigned"
+          "description": "Explanation of the confidence level"
         },
-        "missing_data": {
+        "alternatives_considered": {
           "type": "array",
-          "minItems": 0,
-          "items": { "type": "string" },
-          "description": "Data sources or signals that were absent and would have increased confidence"
-        }
-      }
-    },
-    "remediation": {
-      "type": "object",
-      "required": ["immediate", "short_term", "long_term"],
-      "additionalProperties": false,
-      "properties": {
-        "immediate": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type": "string" },
-          "description": "Actions to take right now to stop the incident"
+          "description": "Alternative hypotheses that were considered",
+          "items": {
+            "type": "string"
+          }
         },
-        "short_term": {
+        "validation_warnings": {
           "type": "array",
-          "minItems": 1,
-          "items": { "type": "string" },
-          "description": "Fixes to deploy within hours or days to prevent recurrence"
-        },
-        "long_term": {
-          "type": "array",
-          "minItems": 1,
-          "items": { "type": "string" },
-          "description": "Architectural or process improvements to address the underlying weakness"
+          "description": "Any schema validation warnings",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

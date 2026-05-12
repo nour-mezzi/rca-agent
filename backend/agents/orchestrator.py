@@ -257,18 +257,45 @@ def _sanitize_json_strings(text: str) -> str:
 
 def _parse_json_response(raw: str) -> dict:
     text = raw.strip()
-    if text.startswith("```"):
+    
+    # Try to extract JSON from markdown code blocks
+    # Look for ```json ... ``` or ```...```
+    import re
+    json_match = re.search(r'```(?:json)?\n?(.*?)```', text, re.DOTALL)
+    if json_match:
+        text = json_match.group(1).strip()
+    elif text.startswith("```"):
+        # Fallback: handle simple code blocks
         text = text.split("\n", 1)[-1]
         if text.endswith("```"):
             text = text.rsplit("```", 1)[0]
-    text = text.strip()
+        text = text.strip()
+    
+    # Try to parse JSON
+    parsed = None
     try:
-        return json.loads(text)
+        parsed = json.loads(text)
     except json.JSONDecodeError:
         try:
-            return json.loads(_sanitize_json_strings(text))
+            parsed = json.loads(_sanitize_json_strings(text))
         except json.JSONDecodeError:
-            return {"raw_analysis": raw, "parse_error": "Model did not return valid JSON"}
+            # Last resort: try to find JSON object in the text
+            brace_match = re.search(r'\{.*\}', text, re.DOTALL)
+            if brace_match:
+                try:
+                    parsed = json.loads(brace_match.group(0))
+                except json.JSONDecodeError:
+                    pass
+    
+    # Ensure we return a dict
+    if isinstance(parsed, dict):
+        return parsed
+    elif isinstance(parsed, list) and len(parsed) > 0 and isinstance(parsed[0], dict):
+        # If array of objects, take the first one
+        return parsed[0]
+    else:
+        # Fallback
+        return {"raw_analysis": raw, "parse_error": "Model did not return valid JSON object"}
 
 
 def _validate_rca_against_schema(rca: dict) -> tuple[bool, list[str]]:
@@ -453,6 +480,12 @@ Briefly share your analysis from these phases, then ask follow-up questions via 
             "role": "assistant",
             "content": initial_reasoning
         })
+        
+        # Prompt for investigation phase with tools
+        messages.append({
+            "role": "user",
+            "content": "Based on your reasoning phases above, now investigate using available tools to resolve ambiguities and gather evidence. Call tools as needed to examine logs, metrics, and traces in detail."
+        })
 
         # --- Step 4: tool-calling investigation loop ---
         reasoning_checkpoints = {
@@ -492,19 +525,21 @@ Briefly share your analysis from these phases, then ask follow-up questions via 
                 print("[RCA] Max investigation rounds reached. Generating final report...")
                 messages.append({
                     "role": "user",
-                    "content": """Produce your final RCA report now. Before finalizing, complete these final reasoning phases:
+                    "content": """Produce your final RCA report now. Work through these final reasoning phases INTERNALLY, then output ONLY the final JSON RCA object — no markdown, no text before or after the JSON.
 
-PHASE 5 - CROSS-SIGNAL VALIDATION:
-Verify your top hypothesis against all signals (logs, metrics, traces).
+PHASE 5: Verify your top hypothesis against ALL signals.
+PHASE 6: Build the evidence-backed causal chain with every step evidenced.
+PHASE 7: Determine Confirmed (≥2 signals + all steps evidenced) or Hypothesis.
 
-PHASE 6 - CAUSAL CHAIN CONSTRUCTION:
-Build the evidence-backed causal chain from root cause to symptom.
-Each step must have: time, service, event, and verbatim evidence.
+Then output ONLY valid JSON with these required fields:
+- "anomaly_id": from context above
+- "window_utc": from context above  
+- "affected_services": array
+- "root_cause": object with confidence, failure_domain, failure_mode, summary, causal_chain
+- "evidence": array
+- "impact": description
 
-PHASE 7 - CONFIDENCE CALIBRATION:
-Determine Confirmed (≥2 signals + all steps evidenced) or Hypothesis (1 signal or inferred steps).
-
-Then respond with the final JSON RCA."""
+Output ONLY the JSON object, no code fences, no preamble."""
                 })
                 reasoning_checkpoints["phases_completed"] = [1, 2, 3, 4, 5, 6, 7]
                 final = _chat_orchestrator(self.client, messages, [])
@@ -513,6 +548,12 @@ Then respond with the final JSON RCA."""
 
         # --- Step 5: Parse and validate result ---
         rca = _parse_json_response(analysis)
+        
+        # Inject missing required fields from context
+        if "anomaly_id" not in rca or not rca.get("anomaly_id"):
+            rca["anomaly_id"] = anomaly_id
+        if "window_utc" not in rca or not rca.get("window_utc"):
+            rca["window_utc"] = {"start": window_start, "end": window_end}
         
         # Validate against schema
         if _RCA_SCHEMA:

@@ -1,0 +1,125 @@
+{
+  "anomaly_id": "ANOMALY-007",
+  "window_utc": {
+    "start": "2026-05-07T15:41:39Z",
+    "end": "2026-05-07T16:41:43Z"
+  },
+  "affected_services": [
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "2236 DNS resolution errors: 'dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout' (\u00d72236) between 16:06:24 and 16:25:32 UTC. First error at 16:06:24 UTC, preceding front-end unavailability.",
+      "peak_time_utc": "16:24:07"
+    },
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "Node.js startup failure: 'npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script' (\u00d754) and 'SyntaxError: Unexpected token u' (\u00d754) at 16:06:24 UTC. Service flapped (up=0/1) between 15:58:09 and 16:01:39 UTC. Memory spike: max=507596800 bytes at 16:20:54 UTC. CPU spike: max=0.0264 cores/s at 16:15:24 UTC (4.0\u00d7avg).",
+      "peak_time_utc": "16:20:54"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "latency",
+      "details": "Trace latency: avg=10.6ms, max=359ms. CPU throttling spike: max=0.0651 at 15:59:54 UTC (12.4\u00d7avg).",
+      "peak_time_utc": "15:59:54"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "latency",
+      "details": "Trace latency: avg=7.0ms, max=217ms. CPU spike: max=0.01321 cores/s at 15:46:39 UTC (3.2\u00d7avg). CPU throttling spike: max=0.06765 at 15:46:39 UTC (26.6\u00d7avg).",
+      "peak_time_utc": "15:46:39"
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU spike: max=0.01836 cores/s at 15:43:24 UTC (5.7\u00d7avg). CPU throttling spike: max=0.0878 at 15:43:09 UTC (64.5\u00d7avg).",
+      "peak_time_utc": "15:43:09"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "failure_domain": "configuration",
+    "failure_mode": "dns_misconfiguration_and_startup_failure",
+    "summary": "The front-end service failed to start due to a Node.js runtime error (misconfigured dependencies), while the edge-router experienced DNS resolution failures (misconfigured Docker DNS resolver), causing cascading unavailability.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "16:06:24",
+        "service": "edge-router",
+        "event": "DNS resolution failures began: 'dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout' (\u00d734). Docker DNS resolver (127.0.0.11:53) was misconfigured or unreachable.",
+        "evidence": "[ERROR \u00d734] time=\"2026-05-07T16:06:24Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:44479->127.0.0.11:53: i/o timeout\""
+      },
+      {
+        "step": 2,
+        "time_utc": "16:06:24",
+        "service": "front-end",
+        "event": "Node.js application failed to start due to runtime errors: 'npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script' (\u00d754) and 'SyntaxError: Unexpected token u' (\u00d754). Likely cause: corrupted dependencies or misconfigured Node.js environment.",
+        "evidence": "[ERROR \u00d754] time=\"2026-05-07T16:06:24Z\" level=error msg=\"npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script 'node server.js'.\""
+      },
+      {
+        "step": 3,
+        "time_utc": "15:58:09",
+        "service": "front-end",
+        "event": "Service became unavailable (metrics port unreachable): 'up=0' in 25% of samples. First drop to 0 at 15:58:09 UTC, flapping until 16:01:39 UTC.",
+        "evidence": "__name__=up, instance=front-end:8079, job=frontend: dropped to 0.0 at 15:58:09 UTC, recovered at 15:58:39 UTC, flapped until 16:01:39 UTC."
+      },
+      {
+        "step": 4,
+        "time_utc": "16:20:54",
+        "service": "front-end",
+        "event": "Memory usage spiked to 507.6MB, likely due to failed restart attempts or memory leaks from unresolved errors.",
+        "evidence": "container_label_com_docker_compose_service=front-end: min=61591552.0, avg=228840218.74627, max=507596800.0 (peak at 16:20:54 UTC, 201 pts)"
+      },
+      {
+        "step": 5,
+        "time_utc": "15:59:09",
+        "service": "front-end",
+        "event": "HTTP 5xx error rate spiked to 2.91942 errors/s as edge-router requests failed to reach the unavailable front-end service.",
+        "evidence": "job=frontend, status_code=500: min=0.0, avg=0.79886, max=2.91942 (peak at 15:59:09 UTC, 122 pts) *** SPIKE (3.7\u00d7avg) ***"
+      }
+    ],
+    "contributing_factors": [
+      "Docker DNS resolver (127.0.0.11:53) misconfiguration amplified DNS resolution failures in the edge-router.",
+      "CPU throttling in carts, orders, and shipping services (likely due to resource limits) exacerbated latency spikes.",
+      "Missing Java metrics instrumentation prevented deeper error analysis of downstream services."
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "[ERROR \u00d754] time=\"2026-05-07T16:06:24Z\" level=error msg=\"npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script 'node server.js'.\" (front-end)"
+    },
+    {
+      "signal": "logs",
+      "description": "[ERROR \u00d734] time=\"2026-05-07T16:06:24Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:44479->127.0.0.11:53: i/o timeout\" (edge-router)"
+    },
+    {
+      "signal": "metrics",
+      "description": "__name__=up, instance=front-end:8079, job=frontend: dropped to 0.0 at 15:58:09 UTC, recovered at 15:58:39 UTC, flapped until 16:01:39 UTC."
+    },
+    {
+      "signal": "metrics",
+      "description": "job=frontend, status_code=500: min=0.0, avg=0.79886, max=2.91942 (peak at 15:59:09 UTC, 122 pts) *** SPIKE (3.7\u00d7avg) ***"
+    },
+    {
+      "signal": "metrics",
+      "description": "container_label_com_docker_compose_service=front-end: min=61591552.0, avg=228840218.74627, max=507596800.0 (peak at 16:20:54 UTC, 201 pts)"
+    }
+  ],
+  "impact": "End-user requests to the front-end service failed with HTTP 500 errors due to DNS resolution failures in the edge-router, caused by the front-end service's unavailability. Downstream services (carts, orders, shipping) experienced latency spikes and CPU throttling, further degrading user experience.",
+  "metadata": {
+    "validation_warnings": [
+      "Schema validation failed: 'dns_misconfiguration_and_startup_failure' is not one of ['crash', 'oom', 'connection_refused', 'dns_failure', 'db_timeout', 'db_connection_pool_exhausted', 'config_error', 'dependency_unavailable', 'instrumentation_gap', 'network_latency', 'network_partition', 'resource_exhaustion', 'infrastructure_throttling', 'dns_misconfiguration', 'dns_misconfiguration_and_service_startup_failure', 'other']",
+      "  Path: root_cause.failure_mode"
+    ],
+    "generated_at": "2026-05-12T15:34:08.241427+00:00",
+    "reasoning_phases_completed": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "confidence_rationale": "",
+    "alternatives_considered": []
+  }
+}
