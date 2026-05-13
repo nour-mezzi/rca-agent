@@ -6,9 +6,11 @@
   "required": [
     "anomaly_id",
     "window_utc",
+    "severity",
     "root_cause",
     "evidence",
-    "impact"
+    "impact",
+    "recommendations"
   ],
   "additionalProperties": true,
   "properties": {
@@ -32,6 +34,11 @@
         }
       }
     },
+    "severity": {
+      "type": "string",
+      "enum": ["P1", "P2", "P3", "P4"],
+      "description": "Incident severity. P1=complete outage or data loss, P2=major user-facing degradation, P3=partial degradation, P4=minor or internal-only issue"
+    },
     "affected_services": {
       "type": "array",
       "description": "List of services showing anomalies",
@@ -49,7 +56,7 @@
           },
           "details": {
             "type": "string",
-            "description": "Detailed description of the anomaly"
+            "description": "Detailed description of the anomaly with verbatim metric values and timestamps"
           },
           "peak_time_utc": {
             "type": ["string", "null"],
@@ -61,12 +68,16 @@
     "root_cause": {
       "type": "object",
       "description": "Root cause analysis",
-      "required": ["confidence", "failure_domain", "failure_mode", "summary", "causal_chain"],
+      "required": ["confidence", "confidence_rationale", "failure_domain", "failure_mode", "summary", "causal_chain", "alternatives_considered"],
       "properties": {
         "confidence": {
           "type": "string",
           "enum": ["Confirmed", "Hypothesis"],
-          "description": "Confidence level based on signal count and evidence quality"
+          "description": "Confidence level: Confirmed requires ≥2 independent signals + every causal step evidenced. Hypothesis if only 1 signal or any step inferred."
+        },
+        "confidence_rationale": {
+          "type": "string",
+          "description": "Explanation of why this confidence level was chosen — cite signal count, evidence quality, and whether alternatives were ruled out"
         },
         "failure_domain": {
           "type": "string",
@@ -103,7 +114,7 @@
           "description": "Step-by-step causal chain from root cause to visible symptoms",
           "items": {
             "type": "object",
-            "required": ["step", "time_utc", "service", "event", "evidence"],
+            "required": ["step", "time_utc", "service", "event", "mechanism", "evidence"],
             "properties": {
               "step": {
                 "type": "integer",
@@ -119,15 +130,15 @@
               },
               "event": {
                 "type": "string",
-                "description": "What happened at this step"
+                "description": "What happened at this step (factual, no interpretation)"
               },
               "mechanism": {
                 "type": "string",
-                "description": "How this step caused the next one"
+                "description": "How this step caused the next one — the propagation link"
               },
               "evidence": {
                 "type": "string",
-                "description": "Verbatim evidence from logs, metrics, or traces"
+                "description": "Verbatim evidence from logs, metrics, or traces — no paraphrasing"
               }
             }
           }
@@ -135,6 +146,13 @@
         "contributing_factors": {
           "type": "array",
           "description": "Secondary factors that amplified or contributed to the failure",
+          "items": {
+            "type": "string"
+          }
+        },
+        "alternatives_considered": {
+          "type": "array",
+          "description": "Alternative hypotheses that were considered and why they were rejected",
           "items": {
             "type": "string"
           }
@@ -160,6 +178,29 @@
         }
       }
     },
+    "recommendations": {
+      "type": "array",
+      "description": "Actionable remediation and prevention steps",
+      "items": {
+        "type": "object",
+        "required": ["action", "priority", "rationale"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Specific remediation or prevention action"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["immediate", "short-term", "long-term"],
+            "description": "When this action should be taken"
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Why this action addresses the root cause or contributing factor"
+          }
+        }
+      }
+    },
     "impact": {
       "type": "string",
       "description": "Description of the impact on end-user functionality and system behavior"
@@ -179,17 +220,6 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 7
-          }
-        },
-        "confidence_rationale": {
-          "type": "string",
-          "description": "Explanation of the confidence level"
-        },
-        "alternatives_considered": {
-          "type": "array",
-          "description": "Alternative hypotheses that were considered",
-          "items": {
-            "type": "string"
           }
         },
         "validation_warnings": {

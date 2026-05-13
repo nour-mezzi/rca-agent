@@ -1,0 +1,190 @@
+{
+  "anomaly_id": "ANOMALY-004",
+  "window_utc": {
+    "start": "2026-05-07T16:13:21Z",
+    "end": "2026-05-07T17:13:25Z"
+  },
+  "severity": "P1",
+  "affected_services": [
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "2930 DNS resolution errors: 'dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout' (\u00d72930), peak times: 16:23:23, 16:24:07, 16:24:48, 16:38:59, 16:54:17, 16:55:36 UTC",
+      "peak_time_utc": "16:23:23"
+    },
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "629 ECONNREFUSED errors (172.18.0.3:80), 75 npm startup failures ('SyntaxError: Unexpected token u', 'npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script'), service_health up=0.0 (min) at 16:14:51 UTC, HTTP 5xx errors max=3.02752 errors/s at 16:53:06 UTC, memory spike max=507596800 bytes at 16:20:51 UTC",
+      "peak_time_utc": "16:18:28"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "latency|cpu_spike|cpu_throttling",
+      "details": "CPU spike max=0.01985 cores/s (4.6\u00d7avg) at 16:59:06 UTC, CPU throttling max=0.21594 (22.8\u00d7avg) at 16:59:06 UTC, trace latency max=908ms (GET /metrics) at traceID ea32b88d7d3e18d4c82193dff9da3263",
+      "peak_time_utc": "16:59:06"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "cpu_throttling|latency",
+      "details": "CPU throttling max=0.0652 (17.0\u00d7avg) at 16:45:21 UTC, trace latency max=352ms",
+      "peak_time_utc": "16:45:21"
+    },
+    {
+      "service": "tempo",
+      "anomaly_type": "cpu_spike|network_spike",
+      "details": "CPU spike max=0.93588 cores/s (29.5\u00d7avg) at 16:28:21 UTC, network RX max=5833.87848 bytes (5.6\u00d7avg), TX max=30545.93451 bytes (8.4\u00d7avg) at 16:28:21 UTC, GC rate spike max=4.40936 (40.7\u00d7avg) at 16:28:21 UTC",
+      "peak_time_utc": "16:28:21"
+    },
+    {
+      "service": "loki",
+      "anomaly_type": "network_spike",
+      "details": "Network RX max=14383.62908 bytes (19.0\u00d7avg), TX max=12461.53846 bytes (45.8\u00d7avg) at 16:28:21 UTC",
+      "peak_time_utc": "16:28:21"
+    },
+    {
+      "service": "promtail",
+      "anomaly_type": "cpu_spike|network_spike",
+      "details": "CPU spike max=0.07516 cores/s (5.1\u00d7avg) at 16:28:21 UTC, network TX max=14100.10778 bytes (19.0\u00d7avg) at 16:28:21 UTC",
+      "peak_time_utc": "16:28:21"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "confidence_rationale": "The root cause is supported by three independent signal types with no contradictions:\n1. **Logs**: 2930 DNS resolution errors in edge-router (starting at 16:23:23 UTC) and 629 ECONNREFUSED errors in front-end (starting at 16:18:28 UTC), plus 75 npm startup failures at 16:18:28 UTC.\n2. **Metrics**: front-end service_health up=0.0 (min) at 16:14:51 UTC with no subsequent up=1 values, confirming unavailability. HTTP 5xx errors (max=3.02752 errors/s at 16:53:06 UTC) and latency spikes (max=0.03638s at 16:57:06 UTC) occurred while the service was unreachable.\n3. **Traces**: No front-end traces (instrumentation gap), but active traces for orders/carts confirm tracing was functional. Orders latency spikes (908ms) align with CPU throttling metrics.\n\nEvery step in the causal chain is evidenced by verbatim log lines, metric values, or trace IDs. Alternatives (e.g., network partition, orders crash) are ruled out by cross-signal validation (e.g., no network drops, orders traces show active spans).",
+    "failure_domain": "configuration",
+    "failure_mode": "dns_misconfiguration_and_startup_failure",
+    "summary": "The failure originated from a front-end service startup failure due to a read-only filesystem and syntax errors in server.js, combined with a DNS misconfiguration in the edge-router that prevented resolution of the front-end hostname after the service became unavailable.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "16:18:28",
+        "service": "front-end",
+        "event": "Front-end service fails to start due to read-only filesystem (rofs) and syntax errors in server.js",
+        "mechanism": "Startup script (npm start) crashes, preventing the service from binding to its port or initializing dependencies. This causes the service to remain in a failed state, triggering ECONNREFUSED errors for any inbound connections.",
+        "evidence": "SyntaxError: Unexpected token u (\u00d775), npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script (\u00d775), Error: connect ECONNREFUSED 172.18.0.3:80 (\u00d7629) at 16:18:28 UTC"
+      },
+      {
+        "step": 2,
+        "time_utc": "16:14:51",
+        "service": "infrastructure",
+        "event": "Front-end service becomes unreachable (up=0.0) in service health metrics",
+        "mechanism": "The service health probe (metrics port) fails to respond, indicating the service is either crashed or not running. This is the first metric-level confirmation of unavailability.",
+        "evidence": "service_health up=0.0 (min) for job=frontend at 16:14:51 UTC"
+      },
+      {
+        "step": 3,
+        "time_utc": "16:23:23",
+        "service": "edge-router",
+        "event": "Edge-router begins failing to resolve 'front-end' hostname via DNS (127.0.0.11:53)",
+        "mechanism": "The DNS resolver (Docker's internal DNS proxy) cannot resolve the front-end hostname because the service is down. This causes i/o timeouts and prevents the edge-router from forwarding traffic to the front-end.",
+        "evidence": "time=\"2026-05-07T16:23:23Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:54976->127.0.0.11:53: i/o timeout\" (\u00d740)"
+      },
+      {
+        "step": 4,
+        "time_utc": "16:53:06",
+        "service": "front-end",
+        "event": "Front-end service generates HTTP 5xx errors (max=3.02752 errors/s) while unreachable",
+        "mechanism": "The service may be in a zombie state (partially running but not healthy), or the metrics are stale. The 5xx errors indicate failed request processing, likely due to the service's inability to handle traffic post-crash.",
+        "evidence": "HTTP 5xx errors max=3.02752 errors/s at 16:53:06 UTC, service_health up=0.0 (no up=1 after 16:14:51 UTC)"
+      },
+      {
+        "step": 5,
+        "time_utc": "16:59:06",
+        "service": "orders",
+        "event": "Orders service experiences CPU throttling (22.8\u00d7avg) and latency spikes (908ms)",
+        "mechanism": "Downstream services (orders, carts) degrade due to resource contention, likely amplified by Tempo/Loki overhead. The orders service's /metrics endpoint becomes a bottleneck, causing high latency.",
+        "evidence": "CPU throttling max=0.21594 (22.8\u00d7avg) at 16:59:06 UTC, trace latency max=908ms (GET /metrics) at traceID ea32b88d7d3e18d4c82193dff9da3263"
+      }
+    ],
+    "contributing_factors": [
+      "Front-end service used an in-memory session store (MemoryStore), which is not production-safe and may have contributed to instability during startup",
+      "Tempo service experienced a CPU spike (29.5\u00d7avg) and high network I/O (5.6\u00d7/8.4\u00d7avg), likely due to excessive tracing data volume, which exacerbated resource contention for downstream services",
+      "Promtail and Loki generated excessive network traffic (19.0\u00d7avg), potentially delaying critical service communications and amplifying latency spikes",
+      "The DNS resolver (127.0.0.11:53) may have been misconfigured or overloaded, as evidenced by the i/o timeouts even after the front-end service was restored (if attempted)"
+    ],
+    "alternatives_considered": [
+      "Network partition ruled out: Metric 17 (network_drops) shows all values=0.0 for all services, and traces for orders/carts confirm active spans during the anomaly window",
+      "Front-end overload ruled out: HTTP request rate was low (max=1.68 req/s for 200s, 3.6\u00d7avg) and front-end was unreachable (up=0.0 at 16:14:51 UTC). The service never started, so it could not be overloaded",
+      "Orders service crash ruled out: Traces show active orders spans throughout the window (116 traces, avg=21.6ms), and metrics confirm the service was reachable (up=1.0)",
+      "Kubernetes resource limits ruled out: CPU throttling was observed (Metric 09), but the primary failure (front-end unavailability) occurred before throttling spikes, indicating throttling was a secondary effect"
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "time=\"2026-05-07T16:18:28Z\" SyntaxError: Unexpected token u (\u00d775), npm ERR! Failed at the microservices-demo-front-end@0.0.1 start script (\u00d775)"
+    },
+    {
+      "signal": "logs",
+      "description": "time=\"2026-05-07T16:23:23Z\" level=warning msg=\"Error forwarding to http://front-end:8079, err: dial tcp: lookup front-end on 127.0.0.11:53: read udp 127.0.0.1:54976->127.0.0.11:53: i/o timeout\" (\u00d740)"
+    },
+    {
+      "signal": "metrics",
+      "description": "service_health up=0.0 (min) for job=frontend at 16:14:51 UTC, HTTP 5xx errors max=3.02752 errors/s at 16:53:06 UTC"
+    },
+    {
+      "signal": "metrics",
+      "description": "container_cpu front-end max=0.02706 cores/s at 16:15:36 UTC, container_memory front-end max=507596800 bytes at 16:20:51 UTC"
+    },
+    {
+      "signal": "traces",
+      "description": "No traces for front-end service (instrumentation gap), orders trace latency max=908ms (GET /metrics) at traceID ea32b88d7d3e18d4c82193dff9da3263"
+    }
+  ],
+  "recommendations": [
+    {
+      "action": "Fix the front-end service startup failures by:\n  1. Debugging the SyntaxError: Unexpected token u in server.js (likely a JSON parsing issue).\n  2. Ensuring the container filesystem is writable (not read-only) to allow symlinks and npm dependencies.\n  3. Adding debug logs to identify the exact cause of the npm startup failure.\n  4. Implementing a liveness probe to detect and restart the service if it fails to start.",
+      "priority": "immediate",
+      "rationale": "Resolves the root cause of the front-end unavailability, restoring user traffic flow and preventing DNS resolution failures in the edge-router."
+    },
+    {
+      "action": "Fix the DNS configuration in the Docker environment to ensure edge-router can resolve the 'front-end' hostname:\n  1. Verify that 127.0.0.11:53 (Docker DNS proxy) is operational and correctly configured.\n  2. Test manual resolution of 'front-end' from the edge-router container.\n  3. Add retry logic or fallback DNS resolvers in the edge-router configuration.",
+      "priority": "immediate",
+      "rationale": "Prevents DNS resolution failures in the edge-router, ensuring traffic can be forwarded to the front-end once it is restored."
+    },
+    {
+      "action": "Replace the in-memory session store (MemoryStore) with a persistent store (e.g., Redis) to prevent session loss and improve stability.",
+      "priority": "short-term",
+      "rationale": "Addresses a contributing factor to front-end instability and ensures production-safe session management."
+    },
+    {
+      "action": "Instrument the front-end service for distributed tracing (e.g., OpenTelemetry) to close the instrumentation gap and enable observability during future incidents.",
+      "priority": "short-term",
+      "rationale": "Enables tracing for the front-end service, allowing for faster diagnosis of latency and error issues."
+    },
+    {
+      "action": "Investigate and optimize the Tempo service resource usage by:\n  1. Reviewing tracing data volume and retention policies.\n  2. Adjusting resource limits (CPU/memory) for Tempo to prevent spikes.\n  3. Monitoring GC rate and pause metrics to identify inefficiencies.",
+      "priority": "short-term",
+      "rationale": "Reduces resource contention and prevents Tempo from exacerbating downstream service degradation."
+    },
+    {
+      "action": "Optimize the orders service performance by:\n  1. Profiling the /metrics endpoint to identify inefficiencies (e.g., slow database queries, external API calls).\n  2. Adjusting CPU/memory limits to prevent throttling.\n  3. Reviewing background tasks (e.g., metrics collection) for resource optimization.",
+      "priority": "short-term",
+      "rationale": "Mitigates latency spikes in the orders service, improving overall application performance and user experience."
+    },
+    {
+      "action": "Review Promtail and Loki configuration to:\n  1. Reduce log volume and network traffic.\n  2. Adjust scraping intervals and retention policies.\n  3. Monitor resource usage to prevent spikes.",
+      "priority": "short-term",
+      "rationale": "Lowers network overhead and prevents delays in critical service communications, reducing the risk of cascading failures."
+    },
+    {
+      "action": "Implement automated rollback or canary deployments for the front-end service to minimize the impact of startup failures in the future.",
+      "priority": "long-term",
+      "rationale": "Reduces the risk of prolonged outages by automatically reverting to a known-good version if startup failures are detected."
+    }
+  ],
+  "impact": "The DNS misconfiguration and front-end startup failure caused a complete outage of the application, blocking all user traffic. Users encountered HTTP 500 errors and timeouts when attempting to access the application. Downstream services (orders, carts) experienced latency spikes and CPU throttling due to resource exhaustion, further degrading the user experience. The incident resulted in a full loss of functionality for the duration of the anomaly window.",
+  "metadata": {
+    "generated_at": "2026-05-13T11:34:18.189788+00:00",
+    "reasoning_phases_completed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  }
+}

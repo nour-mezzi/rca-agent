@@ -191,6 +191,7 @@ OUTPUT FORMAT — respond with a single valid JSON object. No text outside the J
 {
   "anomaly_id": "<string>",
   "window_utc": { "start": "<ISO datetime>", "end": "<ISO datetime>" },
+  "severity": "<P1|P2|P3|P4 — P1=complete outage/data loss, P2=major user-facing degradation, P3=partial degradation, P4=minor or internal-only issue>",
   "affected_services": [
     {
       "service": "<name>",
@@ -201,8 +202,9 @@ OUTPUT FORMAT — respond with a single valid JSON object. No text outside the J
   ],
   "root_cause": {
     "confidence": "<Confirmed|Hypothesis>",
+    "confidence_rationale": "<explain why Confirmed or Hypothesis — cite the number of independent signals, whether every causal step is evidenced, and whether alternatives were ruled out>",
     "failure_domain": "<Name of the system component where the failure originated. Can be: service name (orders, frontend), infrastructure (kubernetes, container, network), database (query timeout, connection pool), configuration issue, or other. NOT necessarily the most visible victim — identify the true source>",
-    "failure_mode": "<exact failure type: crash|oom|connection_refused|dns_failure|db_timeout|db_connection_pool_exhausted|config_error|dependency_unavailable|instrumentation_gap|network_latency|network_partition|resource_exhaustion|infrastructure_throttling|other>",
+    "failure_mode": "<exact failure type: crash|oom|connection_refused|dns_failure|db_timeout|db_connection_pool_exhausted|config_error|dependency_unavailable|instrumentation_gap|network_latency|network_partition|resource_exhaustion|infrastructure_throttling|dns_misconfiguration|dns_misconfiguration_and_startup_failure|other>",
     "summary": "<one sentence — must name the failure domain and failure mode, clearly stating what actually failed at the source>",
     "causal_chain": [
       {
@@ -210,15 +212,24 @@ OUTPUT FORMAT — respond with a single valid JSON object. No text outside the J
         "time_utc": "<HH:MM:SS UTC or null if unknown>",
         "service": "<service name or 'infrastructure'/'network'/'database' if not a service>",
         "event": "<factual description of what happened at this step>",
+        "mechanism": "<how this step caused the next step — the propagation link>",
         "evidence": "<verbatim log line with ×count, exact metric value with timestamp, or trace ID — no paraphrasing>"
       }
     ],
-    "contributing_factors": ["<secondary conditions that amplified the failure or made it harder to detect — or 'none'>"]
+    "contributing_factors": ["<secondary conditions that amplified the failure or made it harder to detect — or 'none'>"],
+    "alternatives_considered": ["<rejected hypothesis and the evidence that ruled it out — e.g., 'orders crash ruled out: traces show active orders spans throughout window'>"]
   },
   "evidence": [
     {
       "signal": "<logs|metrics|traces>",
       "description": "<exact value, UTC timestamp, log line with occurrence count, or trace ID — no paraphrasing>"
+    }
+  ],
+  "recommendations": [
+    {
+      "action": "<specific remediation or prevention action>",
+      "priority": "<immediate|short-term|long-term>",
+      "rationale": "<why this action addresses the root cause or a contributing factor>"
     }
   ],
   "impact": "<description of affected end-user functionality, referencing specific services and observed error types>"
@@ -319,19 +330,14 @@ def _validate_rca_against_schema(rca: dict) -> tuple[bool, list[str]]:
         return False, errors
 
 
-def _enrich_rca_with_metadata(rca: dict, reasoning_checkpoints: dict) -> dict:
-    """
-    Enrich RCA with reasoning metadata and telemetry.
-    Adds timestamps and reasoning phase tracking.
-    """
+def _enrich_rca_with_metadata(rca: dict, phases_completed: list) -> dict:
+    """Add generation timestamp and CoT phase tracking to RCA metadata."""
     if "metadata" not in rca:
         rca["metadata"] = {}
-    
+
     rca["metadata"]["generated_at"] = datetime.now(tz=timezone.utc).isoformat()
-    rca["metadata"]["reasoning_phases_completed"] = reasoning_checkpoints.get("phases_completed", [])
-    rca["metadata"]["confidence_rationale"] = reasoning_checkpoints.get("confidence_rationale", "")
-    rca["metadata"]["alternatives_considered"] = reasoning_checkpoints.get("alternatives_considered", [])
-    
+    rca["metadata"]["reasoning_phases_completed"] = phases_completed
+
     return rca
 
 
@@ -488,12 +494,9 @@ Briefly share your analysis from these phases, then ask follow-up questions via 
         })
 
         # --- Step 4: tool-calling investigation loop ---
-        reasoning_checkpoints = {
-            "phases_completed": [1, 2, 3, 4],  # CoT phases
-            "confidence_rationale": "",
-            "alternatives_considered": []
-        }
-        
+        # Phases 1-4 completed in the CoT checkpoint above; 5-7 completed in the final output prompt
+        phases_completed = [1, 2, 3, 4, 5, 6, 7]
+
         analysis = ""
         for round_num in range(_MAX_TOOL_ROUNDS + 1):
             response = _chat_orchestrator(self.client, messages, _TOOLS)
@@ -528,27 +531,47 @@ Briefly share your analysis from these phases, then ask follow-up questions via 
                     "content": """Produce your final RCA report now. Work through these final reasoning phases INTERNALLY, then output ONLY the final JSON RCA object — no markdown, no text before or after the JSON.
 
 PHASE 5: Verify your top hypothesis against ALL signals.
-PHASE 6: Build the evidence-backed causal chain with every step evidenced.
-PHASE 7: Determine Confirmed (≥2 signals + all steps evidenced) or Hypothesis.
+PHASE 6: Build the evidence-backed causal chain with every step evidenced. Every causal_chain step MUST include a "mechanism" field explaining how it caused the next step.
+PHASE 7: Determine Confirmed (≥2 signals + all steps evidenced) or Hypothesis. Write your rationale in "confidence_rationale".
 
-Then output ONLY valid JSON with these required fields:
+Then output ONLY valid JSON with ALL of these required fields:
 - "anomaly_id": from context above
-- "window_utc": from context above  
+- "window_utc": from context above
+- "severity": P1/P2/P3/P4
 - "affected_services": array
-- "root_cause": object with confidence, failure_domain, failure_mode, summary, causal_chain
+- "root_cause": object with confidence, confidence_rationale, failure_domain, failure_mode, summary, causal_chain (each step has mechanism), contributing_factors, alternatives_considered
 - "evidence": array
+- "recommendations": array with action, priority, rationale per item
 - "impact": description
 
 Output ONLY the JSON object, no code fences, no preamble."""
                 })
-                reasoning_checkpoints["phases_completed"] = [1, 2, 3, 4, 5, 6, 7]
                 final = _chat_orchestrator(self.client, messages, [])
                 analysis = final.choices[0].message.content
                 break
 
         # --- Step 5: Parse and validate result ---
         rca = _parse_json_response(analysis)
-        
+
+        # If the model returned non-JSON, force a final JSON-only prompt
+        if "parse_error" in rca:
+            print("[RCA] Model output was not valid JSON. Forcing JSON output...")
+            messages.append({"role": "assistant", "content": analysis or ""})
+            messages.append({
+                "role": "user",
+                "content": (
+                    "Your previous response was not valid JSON. "
+                    "Output ONLY the RCA JSON object now — no text, no markdown, no code fences.\n\n"
+                    "Required fields: anomaly_id, window_utc, severity (P1/P2/P3/P4), "
+                    "affected_services, root_cause (confidence, confidence_rationale, failure_domain, "
+                    "failure_mode, summary, causal_chain [each step needs mechanism], "
+                    "contributing_factors, alternatives_considered), evidence, recommendations, impact."
+                ),
+            })
+            recovery = _chat_orchestrator(self.client, messages, [])
+            analysis = recovery.choices[0].message.content
+            rca = _parse_json_response(analysis)
+
         # Inject missing required fields from context
         if "anomaly_id" not in rca or not rca.get("anomaly_id"):
             rca["anomaly_id"] = anomaly_id
@@ -570,7 +593,7 @@ Output ONLY the JSON object, no code fences, no preamble."""
                 rca["metadata"]["validation_warnings"] = errors
         
         # Enrich with reasoning metadata
-        rca = _enrich_rca_with_metadata(rca, reasoning_checkpoints)
+        rca = _enrich_rca_with_metadata(rca, phases_completed)
         
         # Save result
         timestamp = datetime.now(tz=timezone.utc).strftime("%Y%m%dT%H%M%SZ")

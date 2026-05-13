@@ -1,0 +1,141 @@
+{
+  "anomaly_id": "ANOMALY-007",
+  "window_utc": {
+    "start": "2026-05-07T15:41:39Z",
+    "end": "2026-05-07T16:41:43Z"
+  },
+  "severity": "P1",
+  "affected_services": [
+    {
+      "service": "front-end",
+      "anomaly_type": "unavailable",
+      "details": "Startup failure (npm ERR! \u00d754, ECONNREFUSED 172.18.0.3:80 \u00d7413), up=0 for ~25% of scrapes, 5xx errors (max=2.919 errors/s at 15:59:09 UTC), memory spike (max=507.6MB at 16:20:54 UTC), CPU spike (4.0\u00d7 avg at 16:15:24 UTC)",
+      "peak_time_utc": "15:59:09"
+    },
+    {
+      "service": "edge-router",
+      "anomaly_type": "error_rate",
+      "details": "DNS resolution failures (dial tcp: lookup front-end ... i/o timeout \u00d72236, 16:06:24\u201316:25:32 UTC)",
+      "peak_time_utc": "16:24:07"
+    },
+    {
+      "service": "carts",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU throttling spike (12.4\u00d7 avg at 15:59:54 UTC), CPU usage spike (0.01174 cores at 16:00:09 UTC)",
+      "peak_time_utc": "15:59:54"
+    },
+    {
+      "service": "orders",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU throttling spike (26.6\u00d7 avg at 15:46:39 UTC), CPU usage spike (0.01321 cores at 15:46:39 UTC)",
+      "peak_time_utc": "15:46:39"
+    },
+    {
+      "service": "shipping",
+      "anomaly_type": "cpu_spike",
+      "details": "CPU throttling spike (64.5\u00d7 avg at 15:43:09 UTC), CPU usage spike (0.01836 cores at 15:43:24 UTC)",
+      "peak_time_utc": "15:43:09"
+    }
+  ],
+  "root_cause": {
+    "confidence": "Confirmed",
+    "confidence_rationale": "Two independent signals (logs and metrics) confirm DNS resolution failures and front-end startup failure. The causal chain is fully evidenced, and alternatives (memory leak, infrastructure throttling) are ruled out by lack of supporting evidence.",
+    "failure_domain": "configuration",
+    "failure_mode": "dns_misconfiguration_and_startup_failure",
+    "summary": "Docker DNS misconfiguration (127.0.0.11:53) and front-end startup failure (npm ERR!) caused a cascading outage, preventing the front-end service from handling traffic.",
+    "causal_chain": [
+      {
+        "step": 1,
+        "time_utc": "15:41:39",
+        "service": "front-end",
+        "event": "Startup failure due to npm ERR! and ECONNREFUSED 172.18.0.3:80",
+        "mechanism": "front-end failed to initialize, preventing it from binding to port 8079",
+        "evidence": "front-end logs: npm ERR! Failed at start script (\u00d754), ECONNREFUSED 172.18.0.3:80 (\u00d7413)"
+      },
+      {
+        "step": 2,
+        "time_utc": "16:06:24",
+        "service": "edge-router",
+        "event": "DNS resolution failures for front-end",
+        "mechanism": "Docker DNS (127.0.0.11:53) timeout caused edge-router to drop requests",
+        "evidence": "edge-router logs: dial tcp: lookup front-end ... i/o timeout (\u00d72236)"
+      },
+      {
+        "step": 3,
+        "time_utc": "15:59:09",
+        "service": "front-end",
+        "event": "5xx error rate spike",
+        "mechanism": "No healthy front-end to handle requests, causing 500 responses",
+        "evidence": "Metrics: job=frontend, status_code=500 (max=2.919 errors/s)"
+      },
+      {
+        "step": 4,
+        "time_utc": "16:20:54",
+        "service": "front-end",
+        "event": "Memory usage spike",
+        "mechanism": "Recovery attempts or traffic surge after partial restoration",
+        "evidence": "Metrics: container_memory (max=507,596,800 bytes)"
+      }
+    ],
+    "contributing_factors": [
+      "Missing logs for front-end pre-anomaly, preventing confirmation of initial health",
+      "No circuit breakers in edge-router, amplifying DNS retry storms",
+      "CPU throttling in downstream services due to untuned resource limits"
+    ],
+    "alternatives_considered": [
+      "Memory leak ruled out: No OOM logs, memory spike occurred after 5xx errors",
+      "Infrastructure throttling ruled out: CPU throttling spikes occurred after front-end was down",
+      "Network partition ruled out: No evidence of broader network issues (network_drops=0 for all services)"
+    ]
+  },
+  "evidence": [
+    {
+      "signal": "logs",
+      "description": "edge-router: dial tcp: lookup front-end on 127.0.0.11:53: read udp ... i/o timeout (\u00d72236, 16:06:24\u201316:25:32 UTC); front-end: npm ERR! Failed at start script (\u00d754), ECONNREFUSED 172.18.0.3:80 (\u00d7413)"
+    },
+    {
+      "signal": "metrics",
+      "description": "job=frontend, up=0 (avg=0.74627); status_code=500 (max=2.919 errors/s at 15:59:09 UTC); container_memory (max=507,596,800 bytes at 16:20:54 UTC)"
+    }
+  ],
+  "recommendations": [
+    {
+      "action": "Fix front-end startup script to resolve npm ERR! and ECONNREFUSED errors",
+      "priority": "immediate",
+      "rationale": "Prevents front-end from failing to start, addressing the primary root cause"
+    },
+    {
+      "action": "Validate Docker DNS configuration (127.0.0.11:53) and ensure front-end is resolvable",
+      "priority": "immediate",
+      "rationale": "Resolves DNS resolution failures in edge-router"
+    },
+    {
+      "action": "Add circuit breakers to edge-router to limit DNS retry storms",
+      "priority": "short-term",
+      "rationale": "Prevents amplification of failures during outages"
+    },
+    {
+      "action": "Increase resource limits for front-end, carts, orders, and shipping",
+      "priority": "short-term",
+      "rationale": "Mitigates CPU throttling and memory spikes during recovery"
+    },
+    {
+      "action": "Implement pre-anomaly logging for front-end to capture startup and runtime events",
+      "priority": "long-term",
+      "rationale": "Improves debugging for future incidents"
+    }
+  ],
+  "impact": "Complete user-facing outage: front-end unavailability prevented all request processing, returning 5xx errors (2.919 errors/s) during peak traffic (7.8\u00d7 avg requests). Downstream services (carts, orders, shipping) received no traffic but experienced CPU throttling due to untuned resource limits.",
+  "metadata": {
+    "generated_at": "2026-05-12T22:16:03.329481+00:00",
+    "reasoning_phases_completed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  }
+}

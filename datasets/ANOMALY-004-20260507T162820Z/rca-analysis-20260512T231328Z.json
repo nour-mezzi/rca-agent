@@ -1,0 +1,25 @@
+{
+  "raw_analysis": " ask_log_agent`",
+  "parse_error": "Model did not return valid JSON object",
+  "anomaly_id": "ANOMALY-004",
+  "window_utc": {
+    "start": "2026-05-07T16:13:21Z",
+    "end": "2026-05-07T17:13:25Z"
+  },
+  "metadata": {
+    "validation_warnings": [
+      "Schema validation failed: 'severity' is a required property",
+      "  Path: "
+    ],
+    "generated_at": "2026-05-12T23:13:28.566640+00:00",
+    "reasoning_phases_completed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  }
+}
